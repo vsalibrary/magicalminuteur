@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && echo y | npm create vite@latest . -- --template react 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && printf '\\\\n' | npx create-vite@latest . --template react 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && printf 'y\\\\n' | npx --yes create-vite@latest . --template react 2>&1)",
+      "Bash(npx create-vite@latest:*)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && npm install 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && npm install firebase tailwindcss postcss autoprefixer vite-plugin-pwa workbox-window 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && npx tailwindcss init -p 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && ./node_modules/.bin/tailwindcss init -p 2>&1)",
+      "Bash(cat:*)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && npm install @tailwindcss/postcss @tailwindcss/vite 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && npm uninstall tailwindcss @tailwindcss/postcss @tailwindcss/vite 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && npm install tailwindcss@3 2>&1)",
+      "Bash(cd \"C:/Users/thegh/OneDrive/Desktop/BOTB Soundboard 2\" && npm run build 2>&1)",
+      "Bash(true:*)",
+      "Bash(echo winget not found:*)",
+      "Bash(winget upgrade:*)",
+      "Bash(winget install:*)",
+      "Bash(node:*)"
+    ]
+  }
+}

@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ─────────────────────────── */
+@layer base {
+  :root {
+    /* light mode */
+    --color-bg: #f3f4f6;
+    --color-surface: #ffffff;
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-text: #111827;
+    --color-muted: rgba(17, 24, 39, 0.45);
+    --color-hover: rgba(0, 0, 0, 0.05);
+    --color-hover-strong: rgba(0, 0, 0, 0.09);
+    --color-ring-bg: rgba(0, 0, 0, 0.08);
+    --color-ripple: rgba(0, 0, 0, 0.1);
+  }
+  .dark {
+    /* dark mode */
+    --color-bg: #0c0c12;
+    --color-surface: #13131e;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-text: #ffffff;
+    --color-muted: rgba(255, 255, 255, 0.4);
+    --color-hover: rgba(255, 255, 255, 0.05);
+    --color-hover-strong: rgba(255, 255, 255, 0.10);
+    --color-ring-bg: rgba(255, 255, 255, 0.08);
+    --color-ripple: rgba(255, 255, 255, 0.2);
+  }
+
+  html, body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    @apply antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  * {
+    @apply box-border;
+  }
+  body {
+    margin: 0;
+    min-height: 100vh;
+  }
+}
+
+/* ─── Design System Components ─────────────────────── */
+@layer components {
+
+  /* Card */
+  .card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    @apply rounded-2xl;
+  }
+
+  /* Section label */
+  .section-label {
+    color: var(--color-muted);
+    @apply text-xs uppercase tracking-widest font-medium;
+  }
+
+  /* Base button */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl font-medium
+           transition-all duration-150 cursor-pointer select-none
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply btn bg-accent hover:bg-accent/90 text-white px-4 py-2;
+  }
+  .btn-ghost {
+    background-color: var(--color-hover);
+    border: 1px solid var(--color-border);
+    color: var(--color-muted);
+    @apply btn px-4 py-2;
+  }
+  .btn-ghost:hover {
+    background-color: var(--color-hover-strong);
+    color: var(--color-text);
+  }
+  .btn-success {
+    @apply btn bg-success/20 hover:bg-success/30 text-success border border-success/30 px-4 py-2;
+  }
+  .btn-danger {
+    @apply btn bg-danger/20 hover:bg-danger/30 text-danger border border-danger/30 px-4 py-2;
+  }
+
+  /* Large action buttons (Correct/Incorrect) */
+  .btn-action {
+    @apply btn flex-col font-bold text-base transition-all duration-150
+           active:scale-95 select-none;
+  }
+
+  /* Score table buttons */
+  .score-btn {
+    border: 1px solid var(--color-border);
+    background-color: var(--color-hover);
+    color: var(--color-muted);
+    @apply text-[11px] px-2 py-1 rounded-lg transition-all cursor-pointer;
+  }
+  .score-btn:hover {
+    background-color: var(--color-hover-strong);
+    color: var(--color-text);
+  }
+  .score-btn-active {
+    @apply bg-accent/20 border-accent/50 text-accent;
+  }
+  .score-btn-warn {
+    @apply bg-warn/20 border-warn/50 text-warn;
+  }
+  .score-btn-wrong {
+    @apply bg-danger/20 border-danger/50 text-danger;
+  }
+
+  /* Ripple effect */
+  .ripple {
+    @apply absolute rounded-full pointer-events-none;
+    background: var(--color-ripple);
+    animation: ripple-anim 0.5s ease-out forwards;
+  }
+
+  /* Confetti */
+  .confetti-wrap {
+    pointer-events: none;
+  }
+  .confetti-piece {
+    @apply absolute top-0;
+    animation: confetti-fall linear forwards;
+  }
+}
+
+/* ─── Utility helpers ───────────────────────────────── */
+@layer utilities {
+  .text-muted {
+    color: var(--color-muted);
+  }
+  .border-subtle {
+    border-color: var(--color-border);
+  }
+  .bg-subtle {
+    background-color: var(--color-hover);
+  }
+}
+
+/* ─── Keyframes ─────────────────────────────────────── */
+@layer utilities {
+  @keyframes ripple-anim {
+    from {
+      opacity: 0.6;
+      transform: scale(0);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-20px) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+}
