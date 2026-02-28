@@ -3,10 +3,13 @@ import { AuthButton } from './AuthButton'
 export function Header({ user, signIn, signOut, theme, toggleTheme, onAdmin }) {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b border-subtle bg-[#0c0c12]/80 backdrop-blur-md" style={{ borderColor: 'var(--color-border)', backgroundColor: 'color-mix(in srgb, var(--color-bg) 80%, transparent)' }}>
-      <div className="flex items-center gap-2">
-        <span className="font-bold text-sm md:text-xl font-display tracking-tight leading-tight" style={{ color: 'var(--color-text)' }}>Mr Mac's Magical Minuteur</span>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="font-bold text-sm md:text-xl font-display tracking-tight leading-tight" style={{ color: 'var(--color-text)' }}>
+          <span className="sm:hidden">Minuteur</span>
+          <span className="hidden sm:inline">Mr Mac's Magical Minuteur</span>
+        </span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 shrink-0">
         <button
           onClick={toggleTheme}
           className="btn btn-ghost text-sm px-3 py-2"

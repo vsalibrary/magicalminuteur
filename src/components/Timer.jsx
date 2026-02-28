@@ -12,7 +12,7 @@ function getRingColor(progress) {
   return '#f87171'
 }
 
-export function Timer({ timer, audio, sounds, settings, onCorrect }) {
+export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }) {
   const { seconds, isRunning, isPaused, progress, start, pause, resume, reset } = timer
   const ringColor = getRingColor(progress)
   const offset = CIRC * (1 - (progress || 0) / 100)
@@ -24,54 +24,57 @@ export function Timer({ timer, audio, sounds, settings, onCorrect }) {
     if (playingButton === 'correct') {
       audio.stopCustom()
       setPlayingButton(null)
+      timer.broadcastSound?.(null)
       return
     }
     if (playingButton === 'incorrect') {
       audio.stopCustom()
       setPlayingButton(null)
     }
-    if (settings?.correctSoundId !== 'default') {
-      const sound = sounds?.find((s) => s.id === settings?.correctSoundId)
-      if (sound) {
-        const { audioEl } = audio.playCustom(sound.url)
-        setPlayingButton('correct')
-        audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'correct' ? null : p))
-      } else {
-        audio.playCorrect()
-      }
+    const correctCustom = settings?.correctSoundId !== 'default' ? sounds?.find((s) => s.id === settings?.correctSoundId) : null
+    let broadcastUrl
+    if (correctCustom) {
+      const { audioEl } = audio.playCustom(correctCustom.url)
+      setPlayingButton('correct')
+      audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'correct' ? null : p))
+      broadcastUrl = correctCustom.url
     } else {
       audio.playCorrect()
+      broadcastUrl = '/sounds/correct.mp3'
     }
     onCorrect?.()
+    timer.broadcastSound?.(broadcastUrl)
   }
 
   const handleIncorrect = () => {
     if (playingButton === 'incorrect') {
       audio.stopCustom()
       setPlayingButton(null)
+      timer.broadcastSound?.(null)
       return
     }
     if (playingButton === 'correct') {
       audio.stopCustom()
       setPlayingButton(null)
     }
-    if (settings?.incorrectSoundId !== 'default') {
-      const sound = sounds?.find((s) => s.id === settings?.incorrectSoundId)
-      if (sound) {
-        const { audioEl } = audio.playCustom(sound.url)
-        setPlayingButton('incorrect')
-        audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'incorrect' ? null : p))
-      } else {
-        audio.playIncorrect()
-      }
+    const incorrectCustom = settings?.incorrectSoundId !== 'default' ? sounds?.find((s) => s.id === settings?.incorrectSoundId) : null
+    let broadcastUrl
+    if (incorrectCustom) {
+      const { audioEl } = audio.playCustom(incorrectCustom.url)
+      setPlayingButton('incorrect')
+      audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'incorrect' ? null : p))
+      broadcastUrl = incorrectCustom.url
     } else {
       audio.playIncorrect()
+      broadcastUrl = '/sounds/incorrect.mp3'
     }
+    onIncorrect?.()
+    timer.broadcastSound?.(broadcastUrl)
   }
 
   return (
-    <div className="card p-4 md:p-6 flex flex-col items-center gap-3 md:gap-5 h-full">
-      <h2 className="section-label">Countdown Timer</h2>
+    <div className="card p-4 md:p-6 flex flex-col items-center gap-2 md:gap-5 md:h-full">
+      <h2 className="section-label hidden md:block">Countdown Timer</h2>
 
       {/* SVG Ring */}
       <div className="relative">
@@ -153,14 +156,14 @@ export function Timer({ timer, audio, sounds, settings, onCorrect }) {
       {/* Correct / Incorrect */}
       <div className="grid grid-cols-2 gap-3 w-full">
         <RippleButton
-          className="btn-action bg-success/20 hover:bg-success/30 border border-success/40 text-success font-bold py-4 md:py-8 rounded-2xl"
+          className="btn-action bg-success/20 hover:bg-success/30 border border-success/40 text-success font-bold py-3 md:py-8 rounded-2xl"
           onClick={handleCorrect}
         >
           <span className="text-2xl md:text-3xl mb-0.5 block">✓</span>
           <span className="text-sm md:text-lg">Correct</span>
         </RippleButton>
         <RippleButton
-          className="btn-action bg-danger/20 hover:bg-danger/30 border border-danger/40 text-danger font-bold py-4 md:py-8 rounded-2xl"
+          className="btn-action bg-danger/20 hover:bg-danger/30 border border-danger/40 text-danger font-bold py-3 md:py-8 rounded-2xl"
           onClick={handleIncorrect}
         >
           <span className="text-2xl md:text-3xl mb-0.5 block">✗</span>
