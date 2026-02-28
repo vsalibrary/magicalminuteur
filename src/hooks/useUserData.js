@@ -113,5 +113,15 @@ export function useUserData(uid) {
     })
   }, [uid])
 
-  return { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, uploading, uploadProgress }
+  const deleteGame = useCallback(async (gameId) => {
+    if (!uid) return
+    await deleteDoc(doc(db, 'users', uid, 'games', gameId))
+  }, [uid])
+
+  const deleteAllGames = useCallback(async (gamesList) => {
+    if (!uid || !gamesList?.length) return
+    await Promise.all(gamesList.map(g => deleteDoc(doc(db, 'users', uid, 'games', g.id))))
+  }, [uid])
+
+  return { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, deleteGame, deleteAllGames, uploading, uploadProgress }
 }

@@ -20,30 +20,35 @@ function ensurePreloaded() {
 }
 
 function playFile(url, fallback) {
-  if (currentCustomAudio) {
-    currentCustomAudio.pause()
-    currentCustomAudio.currentTime = 0
-    currentCustomAudio = null
-  }
-  // Reuse preloaded element if available for instant playback; otherwise create new
-  const audioEl = preloaded[url] || new Audio(url)
-  audioEl.currentTime = 0
-  audioEl.volume = sharedVolume
-  currentCustomAudio = audioEl
+  try {
+    if (currentCustomAudio) {
+      currentCustomAudio.pause()
+      currentCustomAudio.currentTime = 0
+      currentCustomAudio = null
+    }
+    // Reuse preloaded element if available for instant playback; otherwise create new
+    const audioEl = preloaded[url] || new Audio(url)
+    audioEl.currentTime = 0
+    audioEl.volume = sharedVolume
+    currentCustomAudio = audioEl
 
-  let didFallback = false
-  const tryFallback = () => {
-    if (didFallback) return
-    didFallback = true
-    if (currentCustomAudio === audioEl) currentCustomAudio = null
+    let didFallback = false
+    const tryFallback = () => {
+      if (didFallback) return
+      didFallback = true
+      if (currentCustomAudio === audioEl) currentCustomAudio = null
+      fallback?.()
+    }
+
+    audioEl.addEventListener('error', tryFallback)
+    audioEl.addEventListener('ended', () => {
+      if (currentCustomAudio === audioEl) currentCustomAudio = null
+    })
+    const p = audioEl.play()
+    if (p && p.catch) p.catch(tryFallback)
+  } catch {
     fallback?.()
   }
-
-  audioEl.addEventListener('error', tryFallback)
-  audioEl.addEventListener('ended', () => {
-    if (currentCustomAudio === audioEl) currentCustomAudio = null
-  })
-  audioEl.play().catch(tryFallback)
 }
 
 function playCorrectSynth() {

@@ -298,9 +298,10 @@ export function useSession(uid) {
   }, [uid])
 
   const restoreCells = useCallback((cells) => {
-    setCells(cells)
+    const fresh = cells ?? initCells()
+    setCells(fresh)
     setPageState(0)
-    if (sessionRef) setDoc(sessionRef, { cells, page: 0 }, { merge: true })
+    if (sessionRef) setDoc(sessionRef, { cells: fresh, page: 0 }, { merge: true })
   }, [uid])
 
   const broadcastSound = useCallback((url) => {

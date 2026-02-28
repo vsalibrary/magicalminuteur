@@ -4,7 +4,7 @@ export function formatDate(ts) {
   return d.toLocaleDateString('en-HK', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
-export function ScoreHistory({ games, onRestore }) {
+export function ScoreHistory({ games, onRestore, onDelete }) {
   if (!games || games.length === 0) {
     return <p className="text-center text-muted text-sm italic py-4">No saved games yet.</p>
   }
@@ -12,7 +12,7 @@ export function ScoreHistory({ games, onRestore }) {
   return (
     <div className="space-y-2">
       {games.map((game) => (
-        <div key={game.id} className="flex items-center gap-3 py-2 border-b border-subtle last:border-0">
+        <div key={game.id} className="flex items-center gap-2 py-2 border-b border-subtle last:border-0">
           <div className="flex-1 min-w-0">
             <div className="text-sm" style={{ color: 'var(--color-text)' }}>
               <span className="font-medium">{game.teamA || 'Team A'}</span>
@@ -21,14 +21,27 @@ export function ScoreHistory({ games, onRestore }) {
             </div>
             <div className="text-xs text-muted">{formatDate(game.date)}</div>
           </div>
-          {onRestore && (
-            <button
-              onClick={() => onRestore(game)}
-              className="btn btn-ghost text-xs px-3 py-1.5 shrink-0"
-            >
-              Restore
-            </button>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {onRestore && (
+              <button
+                onClick={() => onRestore(game)}
+                className="btn btn-ghost text-xs px-3 py-1.5"
+              >
+                Restore
+              </button>
+            )}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(game.id)}
+                className="btn btn-ghost text-xs px-2 py-1.5"
+                style={{ color: 'var(--color-muted)' }}
+                title="Delete game"
+                aria-label="Delete game"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       ))}
     </div>

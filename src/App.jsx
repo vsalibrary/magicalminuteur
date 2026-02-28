@@ -17,7 +17,7 @@ export default function App() {
   const { user, signIn, signOut } = useAuth()
   const { timer, scores } = useSession(user?.uid || null)
   const audio = useAudio()
-  const { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, uploading, uploadProgress } =
+  const { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, deleteGame, deleteAllGames, uploading, uploadProgress } =
     useUserData(user?.uid || null)
   const { theme, toggleTheme } = useTheme()
 
@@ -65,7 +65,7 @@ export default function App() {
   const handleRestore = (game) => {
     scores.setTeamA(game.teamA || 'Team A')
     scores.setTeamB(game.teamB || 'Team B')
-    if (game.cells) scores.restoreCells(game.cells)
+    scores.restoreCells(game.cells || null)
   }
 
   // Keyboard shortcuts
@@ -174,6 +174,8 @@ export default function App() {
           games={games}
           onRestore={handleRestore}
           onClose={() => setShowAdmin(false)}
+          deleteGame={deleteGame}
+          deleteAllGames={deleteAllGames}
         />
       )}
     </div>

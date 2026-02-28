@@ -3,8 +3,9 @@ import { SoundLibrary } from './SoundLibrary'
 import { ScoreHistory } from './ScoreHistory'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 
-export function AdminPage({ user, sounds, settings, uploading, uploadProgress, uploadSound, deleteSound, assignSound, audio, games, onRestore, onClose }) {
+export function AdminPage({ user, sounds, settings, uploading, uploadProgress, uploadSound, deleteSound, assignSound, audio, games, onRestore, onClose, deleteGame, deleteAllGames }) {
   const [restoreTarget, setRestoreTarget] = useState(null)
+  const [deleteAllConfirm, setDeleteAllConfirm] = useState(false)
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--color-bg)' }}>
@@ -39,8 +40,19 @@ export function AdminPage({ user, sounds, settings, uploading, uploadProgress, u
 
           {/* Past Games */}
           <div className="card p-6">
-            <h3 className="section-label mb-4">Past Games</h3>
-            <ScoreHistory games={games} onRestore={setRestoreTarget} />
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="section-label">Past Games</h3>
+              {games?.length > 0 && (
+                <button
+                  onClick={() => setDeleteAllConfirm(true)}
+                  className="btn btn-ghost text-xs px-2 py-1"
+                  style={{ color: 'var(--color-muted)' }}
+                >
+                  Delete All
+                </button>
+              )}
+            </div>
+            <ScoreHistory games={games} onRestore={setRestoreTarget} onDelete={deleteGame} />
           </div>
 
         </div>
@@ -51,6 +63,14 @@ export function AdminPage({ user, sounds, settings, uploading, uploadProgress, u
           message={`Restore "${restoreTarget.teamA} vs ${restoreTarget.teamB}"? Your current game will be replaced.`}
           onConfirm={() => { onRestore(restoreTarget); onClose(); setRestoreTarget(null) }}
           onCancel={() => setRestoreTarget(null)}
+        />
+      )}
+
+      {deleteAllConfirm && (
+        <ConfirmDialog
+          message="Delete all saved games? This cannot be undone."
+          onConfirm={() => { deleteAllGames(games); setDeleteAllConfirm(false) }}
+          onCancel={() => setDeleteAllConfirm(false)}
         />
       )}
     </div>

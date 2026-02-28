@@ -34,12 +34,14 @@ export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }
     const correctCustom = settings?.correctSoundId !== 'default' ? sounds?.find((s) => s.id === settings?.correctSoundId) : null
     let broadcastUrl
     if (correctCustom) {
-      const { audioEl } = audio.playCustom(correctCustom.url)
-      setPlayingButton('correct')
-      audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'correct' ? null : p))
+      try {
+        const { audioEl } = audio.playCustom(correctCustom.url)
+        setPlayingButton('correct')
+        audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'correct' ? null : p))
+      } catch { audio.playCorrect() }
       broadcastUrl = correctCustom.url
     } else {
-      audio.playCorrect()
+      try { audio.playCorrect() } catch {}
       broadcastUrl = '/sounds/correct.mp3'
     }
     onCorrect?.()
@@ -60,12 +62,14 @@ export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }
     const incorrectCustom = settings?.incorrectSoundId !== 'default' ? sounds?.find((s) => s.id === settings?.incorrectSoundId) : null
     let broadcastUrl
     if (incorrectCustom) {
-      const { audioEl } = audio.playCustom(incorrectCustom.url)
-      setPlayingButton('incorrect')
-      audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'incorrect' ? null : p))
+      try {
+        const { audioEl } = audio.playCustom(incorrectCustom.url)
+        setPlayingButton('incorrect')
+        audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'incorrect' ? null : p))
+      } catch { audio.playIncorrect() }
       broadcastUrl = incorrectCustom.url
     } else {
-      audio.playIncorrect()
+      try { audio.playIncorrect() } catch {}
       broadcastUrl = '/sounds/incorrect.mp3'
     }
     onIncorrect?.()
