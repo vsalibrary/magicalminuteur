@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { SoundLibrary } from './SoundLibrary'
 import { ScoreHistory } from './ScoreHistory'
+import { ConfirmDialog } from './ui/ConfirmDialog'
 
 export function AdminPage({ user, sounds, settings, uploading, uploadProgress, uploadSound, deleteSound, assignSound, audio, games, onRestore, onClose }) {
+  const [restoreTarget, setRestoreTarget] = useState(null)
+
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--color-bg)' }}>
       <div
@@ -36,11 +40,19 @@ export function AdminPage({ user, sounds, settings, uploading, uploadProgress, u
           {/* Past Games */}
           <div className="card p-6">
             <h3 className="section-label mb-4">Past Games</h3>
-            <ScoreHistory games={games} onRestore={(game) => { onRestore(game); onClose() }} />
+            <ScoreHistory games={games} onRestore={setRestoreTarget} />
           </div>
 
         </div>
       </div>
+
+      {restoreTarget && (
+        <ConfirmDialog
+          message={`Restore "${restoreTarget.teamA} vs ${restoreTarget.teamB}"? Your current game will be replaced.`}
+          onConfirm={() => { onRestore(restoreTarget); onClose(); setRestoreTarget(null) }}
+          onCancel={() => setRestoreTarget(null)}
+        />
+      )}
     </div>
   )
 }

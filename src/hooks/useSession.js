@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore'
+
+function randomId() { return Math.random().toString(36).slice(2, 9) }
 import { db } from '../firebase/config'
 
 const ROUNDS = [
@@ -23,6 +25,7 @@ export function useSession(uid) {
   const [progress, setProgress] = useState(0)
   const [justFiveSec, setJustFiveSec] = useState(false)
   const [justFinished, setJustFinished] = useState(false)
+  const [remoteSoundEvent, setRemoteSoundEvent] = useState(null)
 
   // ── Score state ───────────────────────────────────────────────
   const [cells, setCells] = useState(initCells)
@@ -35,6 +38,8 @@ export function useSession(uid) {
   const intervalRef = useRef(null)
   const fiveSecFiredRef = useRef(false)
   const finishedFiredRef = useRef(false)
+  const lastStartedAtRef = useRef(null) // detect new timer start on receiving device
+  const lastSoundIdRef = useRef(null)   // prevent replaying sounds sent by this device
 
   const sessionRef = uid && db ? doc(db, 'users', uid, 'session', 'main') : null
 
@@ -51,9 +56,17 @@ export function useSession(uid) {
       if (data.teamB !== undefined) setTeamBState(data.teamB)
       if (data.page !== undefined) setPageState(data.page)
 
+      // Sound sync — fire on remote device only (skip if this device sent it)
+      const ps = data.pendingSound
+      if (ps?.id && ps.id !== lastSoundIdRef.current) {
+        lastSoundIdRef.current = ps.id
+        setRemoteSoundEvent({ url: ps.url, key: Date.now() })
+      }
+
       setIsPaused(!!data.isPaused)
 
       if (!data.isActive) {
+        lastStartedAtRef.current = null
         setIsRunning(false)
         setIsPaused(false)
         setSeconds(0)
@@ -64,6 +77,13 @@ export function useSession(uid) {
         setIsRunning(false)
         setSeconds(Math.ceil(data.remainingOnPause || 0))
       } else {
+        // Detect a new timer start on the receiving device and reset event guards
+        const sa = data.startedAt?.toMillis ? data.startedAt.toMillis() : data.startedAt
+        if (sa && sa !== lastStartedAtRef.current) {
+          lastStartedAtRef.current = sa
+          fiveSecFiredRef.current = false
+          finishedFiredRef.current = false
+        }
         setIsRunning(true)
       }
     })
@@ -76,8 +96,9 @@ export function useSession(uid) {
       const data = remoteRef.current
       if (!data.isActive || data.isPaused) return
 
-      const endsAt = data.endsAt?.toMillis ? data.endsAt.toMillis() : data.endsAt
-      if (!endsAt) return
+      const startedAt = data.startedAt?.toMillis ? data.startedAt.toMillis() : data.startedAt
+      if (!startedAt) return
+      const endsAt = startedAt + (data.originalTotal || 0) * 1000
 
       const remMs = Math.max(0, endsAt - Date.now())
       const remSec = Math.ceil(remMs / 1000)
@@ -106,22 +127,25 @@ export function useSession(uid) {
 
   // ── Timer controls ────────────────────────────────────────────
   const start = useCallback((secs) => {
-    const endsAt = Date.now() + secs * 1000
-    const update = { endsAt, originalTotal: secs, isPaused: false, isActive: true, remainingOnPause: 0 }
-    remoteRef.current = { ...remoteRef.current, ...update }
+    const now = Date.now()
+    // Use a local approximation in remoteRef so the interval works immediately
+    const localStartedAt = { toMillis: () => now }
+    remoteRef.current = { ...remoteRef.current, startedAt: localStartedAt, originalTotal: secs, isPaused: false, isActive: true, remainingOnPause: 0 }
     fiveSecFiredRef.current = false
     finishedFiredRef.current = false
+    lastStartedAtRef.current = now
     setIsRunning(true)
     setIsPaused(false)
     setSeconds(secs)
     setProgress(0)
-    if (sessionRef) setDoc(sessionRef, update, { merge: true })
+    if (sessionRef) setDoc(sessionRef, { startedAt: serverTimestamp(), originalTotal: secs, isPaused: false, isActive: true, remainingOnPause: 0 }, { merge: true })
   }, [uid])
 
   const pause = useCallback(() => {
     const data = remoteRef.current
     if (!data.isActive || data.isPaused) return
-    const endsAt = data.endsAt?.toMillis ? data.endsAt.toMillis() : data.endsAt
+    const startedAt = data.startedAt?.toMillis ? data.startedAt.toMillis() : data.startedAt
+    const endsAt = startedAt + (data.originalTotal || 0) * 1000
     const remaining = Math.max(0, (endsAt - Date.now()) / 1000)
     const update = { isPaused: true, remainingOnPause: remaining }
     remoteRef.current = { ...data, ...update }
@@ -133,12 +157,16 @@ export function useSession(uid) {
   const resume = useCallback(() => {
     const data = remoteRef.current
     if (!data.isPaused) return
-    const endsAt = Date.now() + (data.remainingOnPause || 0) * 1000
-    const update = { isPaused: false, endsAt, remainingOnPause: 0 }
-    remoteRef.current = { ...data, ...update }
+    const now = Date.now()
+    const remaining = data.remainingOnPause || 0
+    const localStartedAt = { toMillis: () => now }
+    remoteRef.current = { ...data, startedAt: localStartedAt, originalTotal: remaining, isPaused: false, isActive: true, remainingOnPause: 0 }
+    fiveSecFiredRef.current = false
+    finishedFiredRef.current = false
+    lastStartedAtRef.current = now
     setIsRunning(true)
     setIsPaused(false)
-    if (sessionRef) setDoc(sessionRef, update, { merge: true })
+    if (sessionRef) setDoc(sessionRef, { startedAt: serverTimestamp(), originalTotal: remaining, isPaused: false, isActive: true, remainingOnPause: 0 }, { merge: true })
   }, [uid])
 
   const reset = useCallback(() => {
@@ -188,8 +216,21 @@ export function useSession(uid) {
     if (sessionRef) setDoc(sessionRef, { cells: fresh, page: 0 }, { merge: true })
   }, [uid])
 
-  const timer = { seconds, isRunning, isPaused, progress, justFiveSec, justFinished, start, pause, resume, reset }
-  const scores = { cells, teamA, teamB, page, updateCell, setTeamA, setTeamB, setPage, resetCells }
+  const restoreCells = useCallback((cells) => {
+    setCells(cells)
+    setPageState(0)
+    if (sessionRef) setDoc(sessionRef, { cells, page: 0 }, { merge: true })
+  }, [uid])
+
+  const broadcastSound = useCallback((url) => {
+    if (!sessionRef) return
+    const id = randomId()
+    lastSoundIdRef.current = id
+    setDoc(sessionRef, { pendingSound: { id, url: url || null } }, { merge: true })
+  }, [uid])
+
+  const timer = { seconds, isRunning, isPaused, progress, justFiveSec, justFinished, start, pause, resume, reset, broadcastSound, remoteSoundEvent }
+  const scores = { cells, teamA, teamB, page, updateCell, setTeamA, setTeamB, setPage, resetCells, restoreCells }
 
   return { timer, scores }
 }

@@ -33,7 +33,7 @@ const SOUNDS_TAB = {
 export function MobileNav({ activeTab, setActiveTab }) {
   const tabs = [...BASE_TABS, SOUNDS_TAB]
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-white/10 bg-[#0c0c12]/95 backdrop-blur-md md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-white/10 bg-[#0c0c12]/95 backdrop-blur-md md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {tabs.map((tab) => (
         <button
           key={tab.id}

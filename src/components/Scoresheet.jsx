@@ -113,7 +113,7 @@ export function Scoresheet({ user, saveGame, scores }) {
   }
 
   const handleSave = async () => {
-    await saveGame({ teamA, teamB, scoreA, scoreB })
+    await saveGame({ teamA, teamB, scoreA, scoreB, cells })
     setSaveToast(true)
     setTimeout(() => setSaveToast(false), 2500)
   }

@@ -30,7 +30,7 @@ export function AuthButton({ user, signIn, signOut }) {
           referrerPolicy="no-referrer"
         />
       )}
-      <span className="text-sm text-white/70 hidden sm:block max-w-[120px] truncate">
+      <span className="text-sm hidden sm:block max-w-[120px] truncate" style={{ color: 'var(--color-muted)' }}>
         {user.displayName || user.email}
       </span>
       <button onClick={signOut} className="btn btn-ghost text-xs px-2 py-1">

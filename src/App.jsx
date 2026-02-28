@@ -49,6 +49,14 @@ export default function App() {
     }
   }, [timer.justFinished])
 
+  // Play sounds broadcast from the other device
+  useEffect(() => {
+    if (!timer.remoteSoundEvent) return
+    const { url } = timer.remoteSoundEvent
+    if (url) audio.playSimple(url)
+    else audio.stopCustom()
+  }, [timer.remoteSoundEvent?.key])
+
   const handleCorrect = () => {
     setConfettiKey(k => k + 1)
     timer.reset()
@@ -57,6 +65,7 @@ export default function App() {
   const handleRestore = (game) => {
     scores.setTeamA(game.teamA || 'Team A')
     scores.setTeamB(game.teamB || 'Team B')
+    if (game.cells) scores.restoreCells(game.cells)
   }
 
   // Keyboard shortcuts
@@ -96,6 +105,7 @@ export default function App() {
       sounds={sounds}
       settings={settings}
       onCorrect={handleCorrect}
+      onIncorrect={() => timer.reset()}
     />
   )
   const soundboardPanel = (
@@ -103,6 +113,8 @@ export default function App() {
       audio={audio}
       sounds={sounds}
       user={user}
+      onPlay={(url) => user && timer.broadcastSound(url)}
+      onStop={() => user && timer.broadcastSound(null)}
     />
   )
   const scoresheetPanel = (
@@ -114,7 +126,7 @@ export default function App() {
   )
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)', minHeight: '100dvh' }}>
       <Header
         user={user}
         signIn={signIn}
@@ -124,7 +136,7 @@ export default function App() {
         onAdmin={() => setShowAdmin(true)}
       />
 
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 py-6 pb-24 md:pb-6">
+      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 py-6 md:pb-6" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' }}>
         {/* Desktop: Timer | Scoresheet | Soundboard (narrow, vertical) */}
         <div className="hidden md:grid md:grid-cols-[1fr_1fr_128px] gap-6">
           {timerPanel}

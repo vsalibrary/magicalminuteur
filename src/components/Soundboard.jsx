@@ -14,7 +14,7 @@ const DEFAULT_SLOTS = [
   { id: 'default-sadtrombone', name: 'Sad Trombone', url: '/sounds/sadtrombone.mp3' },
 ]
 
-export function Soundboard({ audio, sounds, user }) {
+export function Soundboard({ audio, sounds, user, onPlay, onStop }) {
   const [playingSlot, setPlayingSlot] = useState(null)
 
   const handleSlot = (idx) => {
@@ -23,12 +23,16 @@ export function Soundboard({ audio, sounds, user }) {
     if (playingSlot === idx) {
       audio.stopCustom()
       setPlayingSlot(null)
+      onStop?.()
       return
     }
     audio.stopCustom()
-    const { audioEl } = audio.playCustom(sound.url)
+    const { audioEl } = audio.playSimple(sound.url)
     setPlayingSlot(idx)
-    audioEl.addEventListener('ended', () => setPlayingSlot(s => s === idx ? null : s))
+    onPlay?.(sound.url)
+    audioEl.addEventListener('ended', () => {
+      setPlayingSlot(s => s === idx ? null : s)
+    })
   }
 
   return (

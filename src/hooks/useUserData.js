@@ -106,10 +106,10 @@ export function useUserData(uid) {
     await setDoc(settingsRef, { [field]: soundId }, { merge: true })
   }, [uid])
 
-  const saveGame = useCallback(async ({ teamA, teamB, scoreA, scoreB }) => {
+  const saveGame = useCallback(async ({ teamA, teamB, scoreA, scoreB, cells }) => {
     if (!uid) return
     await addDoc(collection(db, 'users', uid, 'games'), {
-      teamA, teamB, scoreA, scoreB, date: serverTimestamp(),
+      teamA, teamB, scoreA, scoreB, cells: cells || null, date: serverTimestamp(),
     })
   }, [uid])
 

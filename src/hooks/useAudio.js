@@ -2,7 +2,22 @@ import { useRef, useCallback } from 'react'
 
 let sharedCtx = null
 let sharedGain = null
+let sharedVolume = 0.8
 let currentCustomAudio = null
+
+// Preload default sounds so they play instantly on first press
+const PRELOAD_URLS = ['/sounds/correct.mp3', '/sounds/incorrect.mp3', '/sounds/timesup.mp3',
+  '/sounds/fanfare.mp3', '/sounds/cheer.mp3', '/sounds/Wow.mp3', '/sounds/sadtrombone.mp3']
+const preloaded = {}
+function ensurePreloaded() {
+  PRELOAD_URLS.forEach(url => {
+    if (!preloaded[url]) {
+      const el = new Audio(url)
+      el.preload = 'auto'
+      preloaded[url] = el
+    }
+  })
+}
 
 function playFile(url, fallback) {
   if (currentCustomAudio) {
@@ -10,13 +25,11 @@ function playFile(url, fallback) {
     currentCustomAudio.currentTime = 0
     currentCustomAudio = null
   }
-  const { ctx, gain } = getCtx()
-  const audioEl = new Audio()
-  audioEl.crossOrigin = 'anonymous'
-  audioEl.src = url
+  // Reuse preloaded element if available for instant playback; otherwise create new
+  const audioEl = preloaded[url] || new Audio(url)
+  audioEl.currentTime = 0
+  audioEl.volume = sharedVolume
   currentCustomAudio = audioEl
-  const source = ctx.createMediaElementSource(audioEl)
-  source.connect(gain)
 
   let didFallback = false
   const tryFallback = () => {
@@ -95,9 +108,12 @@ function getCtx() {
 
 export function useAudio() {
   const volumeRef = useRef(0.8)
+  // Kick off preloading on first render (requires no user gesture for audio loading, only for play)
+  ensurePreloaded()
 
   const setVolume = useCallback((v) => {
     volumeRef.current = v
+    sharedVolume = v
     if (sharedGain) {
       sharedGain.gain.setTargetAtTime(v, sharedCtx.currentTime, 0.01)
     }
@@ -145,6 +161,31 @@ export function useAudio() {
     }
   }, [])
 
+  // Simple playback without Web Audio — for soundboard buttons (fast, iOS-compatible)
+  const playSimple = useCallback((url) => {
+    if (currentCustomAudio) {
+      currentCustomAudio.pause()
+      currentCustomAudio.currentTime = 0
+      currentCustomAudio = null
+    }
+    const audioEl = preloaded[url] || new Audio(url)
+    audioEl.currentTime = 0
+    audioEl.volume = sharedVolume
+    currentCustomAudio = audioEl
+    audioEl.play().catch(console.error)
+    audioEl.addEventListener('ended', () => {
+      if (currentCustomAudio === audioEl) currentCustomAudio = null
+    })
+    return {
+      audioEl,
+      stop: () => {
+        audioEl.pause()
+        audioEl.currentTime = 0
+        if (currentCustomAudio === audioEl) currentCustomAudio = null
+      },
+    }
+  }, [])
+
   const playCustom = useCallback((url) => {
     if (currentCustomAudio) {
       currentCustomAudio.pause()
@@ -181,5 +222,5 @@ export function useAudio() {
     }
   }, [])
 
-  return { volumeRef, setVolume, playCorrect, playIncorrect, playTimerEnd, playFiveSecond, playBeep, playCustom, stopCustom }
+  return { volumeRef, setVolume, playCorrect, playIncorrect, playTimerEnd, playFiveSecond, playBeep, playCustom, playSimple, stopCustom }
 }
