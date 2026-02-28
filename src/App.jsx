@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from './hooks/useAuth'
-import { useTimer } from './hooks/useTimer'
+import { useSession } from './hooks/useSession'
 import { useAudio } from './hooks/useAudio'
 import { useUserData } from './hooks/useUserData'
 import { useTheme } from './hooks/useTheme'
@@ -14,7 +14,7 @@ import { Overlay } from './components/Overlay'
 
 export default function App() {
   const { user, signIn, signOut } = useAuth()
-  const timer = useTimer()
+  const { timer, scores } = useSession(user?.uid || null)
   const audio = useAudio()
   const { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, uploading, uploadProgress } =
     useUserData(user?.uid || null)
@@ -109,6 +109,7 @@ export default function App() {
       user={user}
       games={games}
       saveGame={saveGame}
+      scores={scores}
     />
   )
 

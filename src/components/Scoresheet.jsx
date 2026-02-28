@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { RippleButton } from './ui/RippleButton'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { ScoreHistory } from './ScoreHistory'
@@ -26,15 +26,6 @@ const ROUNDS = [
   { id: 'b3',  label: 'Bonus 3',  primary: 'a', bonus: true },
   { id: 'b4',  label: 'Bonus 4',  primary: 'b', bonus: true },
 ]
-
-// cell: { primary: null|2|3|'wrong', passover: null|2|'wrong' }
-// primary  = primary team's result for this round
-// passover = the OTHER team's passover result (only used when primary === 'wrong')
-function initCells() {
-  const cells = {}
-  ROUNDS.forEach(r => { cells[r.id] = { primary: null, passover: null } })
-  return cells
-}
 
 function totalScores(cells) {
   let scoreA = 0, scoreB = 0
@@ -95,13 +86,10 @@ function PassoverCell({ value, enabled, onChange, team }) {
 const PAGE_SIZE = 4
 const TOTAL_PAGES = Math.ceil(ROUNDS.length / PAGE_SIZE)
 
-export function Scoresheet({ user, games, saveGame }) {
-  const [teamA, setTeamA] = useState('Team A')
-  const [teamB, setTeamB] = useState('Team B')
-  const [cells, setCells] = useState(initCells)
+export function Scoresheet({ user, games, saveGame, scores }) {
+  const { cells, teamA, teamB, page, updateCell, setTeamA, setTeamB, setPage, resetCells } = scores
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [saveToast, setSaveToast] = useState(false)
-  const [page, setPage] = useState(0)
 
   const { scoreA, scoreB } = totalScores(cells)
 
@@ -120,19 +108,8 @@ export function Scoresheet({ user, games, saveGame }) {
     setPage(targetPage)
   }, [activeRound])
 
-  const updateRound = useCallback((roundId, field, value) => {
-    setCells(prev => {
-      const updated = { ...prev[roundId], [field]: value }
-      // Changing primary away from 'wrong' clears any passover already recorded
-      if (field === 'primary' && value !== 'wrong') {
-        updated.passover = null
-      }
-      return { ...prev, [roundId]: updated }
-    })
-  }, [])
-
   const handleReset = () => {
-    setCells(initCells())
+    resetCells()
     setShowResetConfirm(false)
   }
 
@@ -202,13 +179,13 @@ export function Scoresheet({ user, games, saveGame }) {
           {isPrimaryA ? (
             <PrimaryCell
               value={primary}
-              onChange={v => updateRound(round.id, 'primary', v)}
+              onChange={v => updateCell(round.id, 'primary', v)}
             />
           ) : (
             <PassoverCell
               value={passover}
               enabled={passoverAvailable}
-              onChange={v => updateRound(round.id, 'passover', v)}
+              onChange={v => updateCell(round.id, 'passover', v)}
               team="a"
             />
           )}
@@ -222,13 +199,13 @@ export function Scoresheet({ user, games, saveGame }) {
           {!isPrimaryA ? (
             <PrimaryCell
               value={primary}
-              onChange={v => updateRound(round.id, 'primary', v)}
+              onChange={v => updateCell(round.id, 'primary', v)}
             />
           ) : (
             <PassoverCell
               value={passover}
               enabled={passoverAvailable}
-              onChange={v => updateRound(round.id, 'passover', v)}
+              onChange={v => updateCell(round.id, 'passover', v)}
               team="b"
             />
           )}
