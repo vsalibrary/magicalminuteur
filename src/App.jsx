@@ -126,7 +126,7 @@ export default function App() {
   )
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)', minHeight: '100dvh' }}>
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)' }}>
       <Header
         user={user}
         signIn={signIn}
@@ -136,7 +136,7 @@ export default function App() {
         onAdmin={() => setShowAdmin(true)}
       />
 
-      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 py-6 md:pb-6" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' }}>
+      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 py-6 pb-24 md:pb-6">
         {/* Desktop: Timer | Scoresheet | Soundboard (narrow, vertical) */}
         <div className="hidden md:grid md:grid-cols-[1fr_1fr_128px] gap-6">
           {timerPanel}

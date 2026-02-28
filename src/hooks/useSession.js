@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { doc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore'
+import { doc, setDoc, onSnapshot, serverTimestamp, deleteField } from 'firebase/firestore'
+import { db } from '../firebase/config'
 
 function randomId() { return Math.random().toString(36).slice(2, 9) }
-import { db } from '../firebase/config'
 
 const ROUNDS = [
   { id: 'r1' }, { id: 'r2' }, { id: 'r3' }, { id: 'r4' },
@@ -34,22 +34,51 @@ export function useSession(uid) {
   const [page, setPageState] = useState(0)
 
   // ── Internal refs ─────────────────────────────────────────────
-  const remoteRef = useRef({})          // latest Firestore snapshot data
+  const remoteRef = useRef({})
   const intervalRef = useRef(null)
   const fiveSecFiredRef = useRef(false)
   const finishedFiredRef = useRef(false)
-  const lastStartedAtRef = useRef(null) // detect new timer start on receiving device
-  const lastSoundIdRef = useRef(null)   // prevent replaying sounds sent by this device
+  const lastStartedAtRef = useRef(null)
+  const lastSoundIdRef = useRef(null)
+  // Clock calibration: offset such that Date.now() + clockOffsetRef.current ≈ server time
+  const clockOffsetRef = useRef(0)
+  const calibWriteSentAt = useRef(null)  // local time when calibration write was sent
+  const calibNonce = useRef(null)        // nonce to match our own calibration write
 
   const sessionRef = uid && db ? doc(db, 'users', uid, 'session', 'main') : null
 
-  // ── Firestore listener ────────────────────────────────────────
+  // Returns an approximation of current server time, corrected for clock drift
+  const serverNow = () => Date.now() + clockOffsetRef.current
+
+  // ── Firestore listener + clock calibration ────────────────────
   useEffect(() => {
     if (!sessionRef) return
+
+    // Write a calibration timestamp so we can measure clock offset on receipt
+    const nonce = randomId()
+    calibNonce.current = nonce
+    calibWriteSentAt.current = Date.now()
+    setDoc(sessionRef, { _calibId: nonce, _calibAt: serverTimestamp() }, { merge: true })
+
     const unsub = onSnapshot(sessionRef, (snap) => {
       if (!snap.exists()) return
       const data = snap.data()
       remoteRef.current = data
+
+      // Clock calibration: once we get our own calibration write confirmed by server,
+      // compute offset = serverTime + propagation - localNow.
+      // We only accept our own nonce so stale data doesn't corrupt the offset.
+      if (!snap.metadata.hasPendingWrites &&
+          data._calibId === calibNonce.current &&
+          data._calibAt?.toMillis &&
+          calibWriteSentAt.current) {
+        const serverCalib = data._calibAt.toMillis()
+        const localNow = Date.now()
+        const rtt = localNow - calibWriteSentAt.current
+        // offset = (serverCalib + propagation) - localNow, propagation ≈ rtt/2
+        clockOffsetRef.current = serverCalib + Math.round(rtt / 2) - localNow
+        calibWriteSentAt.current = null  // calibrated, no need to recalibrate
+      }
 
       if (data.cells) setCells(data.cells)
       if (data.teamA !== undefined) setTeamAState(data.teamA)
@@ -100,7 +129,9 @@ export function useSession(uid) {
       if (!startedAt) return
       const endsAt = startedAt + (data.originalTotal || 0) * 1000
 
-      const remMs = Math.max(0, endsAt - Date.now())
+      // Use server-calibrated time so all devices agree on remaining time
+      const now = serverNow()
+      const remMs = Math.max(0, endsAt - now)
       const remSec = Math.ceil(remMs / 1000)
       const orig = (data.originalTotal || 1) * 1000
       const prog = Math.min(100, ((orig - remMs) / orig) * 100)
@@ -128,7 +159,6 @@ export function useSession(uid) {
   // ── Timer controls ────────────────────────────────────────────
   const start = useCallback((secs) => {
     const now = Date.now()
-    // Use a local approximation in remoteRef so the interval works immediately
     const localStartedAt = { toMillis: () => now }
     remoteRef.current = { ...remoteRef.current, startedAt: localStartedAt, originalTotal: secs, isPaused: false, isActive: true, remainingOnPause: 0 }
     fiveSecFiredRef.current = false
@@ -138,7 +168,14 @@ export function useSession(uid) {
     setIsPaused(false)
     setSeconds(secs)
     setProgress(0)
-    if (sessionRef) setDoc(sessionRef, { startedAt: serverTimestamp(), originalTotal: secs, isPaused: false, isActive: true, remainingOnPause: 0 }, { merge: true })
+    if (sessionRef) setDoc(sessionRef, {
+      startedAt: serverTimestamp(),
+      originalTotal: secs,
+      isPaused: false,
+      isActive: true,
+      remainingOnPause: 0,
+      endsAt: deleteField(),  // remove legacy field
+    }, { merge: true })
   }, [uid])
 
   const pause = useCallback(() => {
@@ -146,7 +183,7 @@ export function useSession(uid) {
     if (!data.isActive || data.isPaused) return
     const startedAt = data.startedAt?.toMillis ? data.startedAt.toMillis() : data.startedAt
     const endsAt = startedAt + (data.originalTotal || 0) * 1000
-    const remaining = Math.max(0, (endsAt - Date.now()) / 1000)
+    const remaining = Math.max(0, (endsAt - serverNow()) / 1000)
     const update = { isPaused: true, remainingOnPause: remaining }
     remoteRef.current = { ...data, ...update }
     setIsRunning(false)
@@ -166,7 +203,14 @@ export function useSession(uid) {
     lastStartedAtRef.current = now
     setIsRunning(true)
     setIsPaused(false)
-    if (sessionRef) setDoc(sessionRef, { startedAt: serverTimestamp(), originalTotal: remaining, isPaused: false, isActive: true, remainingOnPause: 0 }, { merge: true })
+    if (sessionRef) setDoc(sessionRef, {
+      startedAt: serverTimestamp(),
+      originalTotal: remaining,
+      isPaused: false,
+      isActive: true,
+      remainingOnPause: 0,
+      endsAt: deleteField(),
+    }, { merge: true })
   }, [uid])
 
   const reset = useCallback(() => {
