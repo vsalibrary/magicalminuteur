@@ -106,7 +106,7 @@ export function useSession(uid) {
 
   // ── Timer controls ────────────────────────────────────────────
   const start = useCallback((secs) => {
-    const endsAt = new Date(Date.now() + secs * 1000)
+    const endsAt = Date.now() + secs * 1000
     const update = { endsAt, originalTotal: secs, isPaused: false, isActive: true, remainingOnPause: 0 }
     remoteRef.current = { ...remoteRef.current, ...update }
     fiveSecFiredRef.current = false
@@ -133,7 +133,7 @@ export function useSession(uid) {
   const resume = useCallback(() => {
     const data = remoteRef.current
     if (!data.isPaused) return
-    const endsAt = new Date(Date.now() + (data.remainingOnPause || 0) * 1000)
+    const endsAt = Date.now() + (data.remainingOnPause || 0) * 1000
     const update = { isPaused: false, endsAt, remainingOnPause: 0 }
     remoteRef.current = { ...data, ...update }
     setIsRunning(true)

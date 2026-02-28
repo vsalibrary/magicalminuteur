@@ -27,7 +27,7 @@ export function Soundboard({ audio, sounds }) {
   return (
     <div className="card p-4 flex flex-col gap-3">
       <h2 className="section-label text-center">Soundboard</h2>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-4 md:grid-cols-1 gap-3">
         {PS_SLOTS.map((slot, idx) => {
           const sound = sounds[idx]
           const isPlaying = playingSlot === idx

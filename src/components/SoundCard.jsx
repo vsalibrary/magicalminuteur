@@ -58,15 +58,17 @@ export function SoundCard({
             onClick={onAssignCorrect}
             className={`score-btn flex-1 text-xs py-1.5 ${isCorrectAssigned ? 'score-btn-active border-success' : ''}`}
             style={isCorrectAssigned ? { borderColor: '#34d399', boxShadow: '0 0 8px rgba(52,211,153,0.4)' } : {}}
+            title={isCorrectAssigned ? 'Click to unassign' : 'Set as correct sound'}
           >
-            {isCorrectAssigned ? '✓ Correct' : 'Set as ✓'}
+            {isCorrectAssigned ? '✓ Correct ×' : 'Set as ✓'}
           </button>
           <button
             onClick={onAssignIncorrect}
             className={`score-btn flex-1 text-xs py-1.5 ${isIncorrectAssigned ? 'score-btn-active border-danger' : ''}`}
             style={isIncorrectAssigned ? { borderColor: '#f87171', boxShadow: '0 0 8px rgba(248,113,113,0.4)' } : {}}
+            title={isIncorrectAssigned ? 'Click to unassign' : 'Set as incorrect sound'}
           >
-            {isIncorrectAssigned ? '✗ Wrong' : 'Set as ✗'}
+            {isIncorrectAssigned ? '✗ Wrong ×' : 'Set as ✗'}
           </button>
         </div>
       )}

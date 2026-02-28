@@ -123,13 +123,11 @@ export default function App() {
         onAdmin={() => setShowAdmin(true)}
       />
 
-      <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 pb-24 md:pb-6">
-        {/* Desktop: top row (Timer | Scoresheet same height), bottom row (Soundboard full-width) */}
-        <div className="hidden md:flex md:flex-col gap-6">
-          <div className="grid grid-cols-2 gap-6">
-            {timerPanel}
-            {scoresheetPanel}
-          </div>
+      <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 py-6 pb-24 md:pb-6">
+        {/* Desktop: Timer | Scoresheet | Soundboard (narrow, vertical) */}
+        <div className="hidden md:grid md:grid-cols-[1fr_1fr_128px] gap-6">
+          {timerPanel}
+          {scoresheetPanel}
           {soundboardPanel}
         </div>
 

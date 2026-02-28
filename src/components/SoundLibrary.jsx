@@ -135,8 +135,8 @@ export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress
             isPlaying={playingId === sound.id}
             onPlay={() => handlePlay(sound)}
             onStop={handleStop}
-            onAssignCorrect={() => assignSound('correct', sound.id)}
-            onAssignIncorrect={() => assignSound('incorrect', sound.id)}
+            onAssignCorrect={() => assignSound('correct', settings.correctSoundId === sound.id ? 'default' : sound.id)}
+            onAssignIncorrect={() => assignSound('incorrect', settings.incorrectSoundId === sound.id ? 'default' : sound.id)}
             onDelete={() => setDeleteTarget({ id: sound.id, storagePath: sound.storagePath })}
             bars={playingId === sound.id ? analyserBars : null}
             isCorrectAssigned={settings.correctSoundId === sound.id}
