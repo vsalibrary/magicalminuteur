@@ -4,6 +4,25 @@ let sharedCtx = null
 let sharedGain = null
 let currentCustomAudio = null
 
+function playFile(url) {
+  if (currentCustomAudio) {
+    currentCustomAudio.pause()
+    currentCustomAudio.currentTime = 0
+    currentCustomAudio = null
+  }
+  const { ctx, gain } = getCtx()
+  const audioEl = new Audio()
+  audioEl.crossOrigin = 'anonymous'
+  audioEl.src = url
+  currentCustomAudio = audioEl
+  const source = ctx.createMediaElementSource(audioEl)
+  source.connect(gain)
+  audioEl.play().catch(console.error)
+  audioEl.addEventListener('ended', () => {
+    if (currentCustomAudio === audioEl) currentCustomAudio = null
+  })
+}
+
 function getCtx() {
   if (!sharedCtx) {
     sharedCtx = new (window.AudioContext || window.webkitAudioContext)()
@@ -26,64 +45,9 @@ export function useAudio() {
     }
   }, [])
 
-  const playCorrect = useCallback(() => {
-    const { ctx, gain } = getCtx()
-    const t = ctx.currentTime
-    // Major chord: C5, E5, G5
-    const freqs = [523.25, 659.25, 783.99]
-    freqs.forEach((freq, i) => {
-      const osc = ctx.createOscillator()
-      const env = ctx.createGain()
-      osc.type = 'sine'
-      osc.frequency.value = freq
-      env.gain.setValueAtTime(0, t)
-      env.gain.linearRampToValueAtTime(0.3, t + 0.02 + i * 0.03)
-      env.gain.exponentialRampToValueAtTime(0.001, t + 0.6)
-      osc.connect(env)
-      env.connect(gain)
-      osc.start(t + i * 0.03)
-      osc.stop(t + 0.7)
-    })
-  }, [])
-
-  const playIncorrect = useCallback(() => {
-    const { ctx, gain } = getCtx()
-    const t = ctx.currentTime
-    // Descending dissonant tones
-    const freqs = [300, 220]
-    freqs.forEach((freq, i) => {
-      const osc = ctx.createOscillator()
-      const env = ctx.createGain()
-      osc.type = 'sawtooth'
-      osc.frequency.setValueAtTime(freq, t + i * 0.15)
-      osc.frequency.linearRampToValueAtTime(freq * 0.7, t + i * 0.15 + 0.3)
-      env.gain.setValueAtTime(0.4, t + i * 0.15)
-      env.gain.exponentialRampToValueAtTime(0.001, t + i * 0.15 + 0.35)
-      osc.connect(env)
-      env.connect(gain)
-      osc.start(t + i * 0.15)
-      osc.stop(t + i * 0.15 + 0.4)
-    })
-  }, [])
-
-  const playTimerEnd = useCallback(() => {
-    const { ctx, gain } = getCtx()
-    const t = ctx.currentTime
-    // 3 buzzes, each 0.3s
-    for (let i = 0; i < 3; i++) {
-      const osc = ctx.createOscillator()
-      const env = ctx.createGain()
-      osc.type = 'square'
-      osc.frequency.value = 220
-      env.gain.setValueAtTime(0.5, t + i * 0.3)
-      env.gain.setValueAtTime(0.5, t + i * 0.3 + 0.22)
-      env.gain.linearRampToValueAtTime(0, t + i * 0.3 + 0.3)
-      osc.connect(env)
-      env.connect(gain)
-      osc.start(t + i * 0.3)
-      osc.stop(t + i * 0.3 + 0.3)
-    }
-  }, [])
+  const playCorrect = useCallback(() => { playFile('/sounds/correct.mp3') }, [])
+  const playIncorrect = useCallback(() => { playFile('/sounds/incorrect.mp3') }, [])
+  const playTimerEnd = useCallback(() => { playFile('/sounds/timesup.mp3') }, [])
 
   const playFiveSecond = useCallback(() => {
     const { ctx, gain } = getCtx()

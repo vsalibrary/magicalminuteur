@@ -102,6 +102,7 @@ export default function App() {
     <Soundboard
       audio={audio}
       sounds={sounds}
+      user={user}
     />
   )
   const scoresheetPanel = (
@@ -140,7 +141,7 @@ export default function App() {
       </main>
 
       <Footer />
-      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} user={user} />
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
       <Overlay
         fiveSecKey={fiveSecKey}
         timesUpKey={timesUpKey}

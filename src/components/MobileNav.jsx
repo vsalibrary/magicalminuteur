@@ -30,8 +30,8 @@ const SOUNDS_TAB = {
   ),
 }
 
-export function MobileNav({ activeTab, setActiveTab, user }) {
-  const tabs = user ? [...BASE_TABS, SOUNDS_TAB] : BASE_TABS
+export function MobileNav({ activeTab, setActiveTab }) {
+  const tabs = [...BASE_TABS, SOUNDS_TAB]
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-white/10 bg-[#0c0c12]/95 backdrop-blur-md md:hidden">
       {tabs.map((tab) => (
