@@ -19,7 +19,10 @@
       "Bash(echo winget not found:*)",
       "Bash(winget upgrade:*)",
       "Bash(winget install:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(git:*)",
+      "Bash(gh auth:*)",
+      "Bash(npm install:*)"
     ]
   }
 }

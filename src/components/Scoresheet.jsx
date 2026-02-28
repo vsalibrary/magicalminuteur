@@ -239,7 +239,7 @@ export function Scoresheet({ user, games, saveGame }) {
 
   return (
     <div className="card p-4 md:p-6 flex flex-col gap-5">
-      <h2 className="section-label">Scoresheet</h2>
+      <h2 className="section-label text-center">Scoresheet</h2>
 
       {/* Team name inputs */}
       <div className="grid grid-cols-2 gap-3">
@@ -323,7 +323,7 @@ export function Scoresheet({ user, games, saveGame }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 items-center justify-between">
+      <div className="flex gap-3 items-center justify-center">
         <RippleButton className="btn btn-ghost text-sm" onClick={() => setShowResetConfirm(true)}>
           Reset Scores
         </RippleButton>

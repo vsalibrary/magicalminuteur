@@ -15,6 +15,8 @@ export function Timer({ timer, audio, sounds, settings, onCorrect }) {
   const { seconds, isRunning, isPaused, progress, start, pause, resume, reset } = timer
   const ringColor = getRingColor(progress)
   const offset = CIRC * (1 - (progress || 0) / 100)
+  const currentVolume = Math.round((audio?.volumeRef?.current || 0.8) * 100)
+  const handleVolume = (e) => audio?.setVolume(Number(e.target.value) / 100)
 
   const handleCorrect = () => {
     if (settings?.correctSoundId === 'default') {
@@ -95,41 +97,27 @@ export function Timer({ timer, audio, sounds, settings, onCorrect }) {
         </svg>
       </div>
 
-      {/* Start buttons */}
+      {/* All timer controls on one line */}
       <div className="flex gap-2 flex-wrap justify-center">
-        <RippleButton
-          className="btn btn-ghost text-sm"
-          onClick={() => start(20)}
-          disabled={isRunning}
-        >
-          20s
-        </RippleButton>
-        <RippleButton
-          className="btn btn-ghost text-sm"
-          onClick={() => start(10)}
-          disabled={isRunning}
-        >
-          Pass Over
-        </RippleButton>
+        <RippleButton className="btn btn-ghost text-sm" onClick={() => start(20)} disabled={isRunning}>20s</RippleButton>
+        <RippleButton className="btn btn-ghost text-sm" onClick={() => start(10)} disabled={isRunning}>Pass Over</RippleButton>
+        {!isRunning && !isPaused ? null : isPaused ? (
+          <RippleButton className="btn btn-primary text-sm" onClick={resume}>Resume</RippleButton>
+        ) : (
+          <RippleButton className="btn btn-ghost text-sm" onClick={pause}>Pause</RippleButton>
+        )}
+        <RippleButton className="btn btn-ghost text-sm" onClick={reset}>Reset</RippleButton>
       </div>
 
-      {/* Control buttons */}
-      <div className="flex gap-3">
-        {!isRunning && !isPaused ? null : isPaused ? (
-          <RippleButton className="btn btn-primary px-6" onClick={resume}>
-            Resume
-          </RippleButton>
-        ) : (
-          <RippleButton className="btn btn-ghost px-6" onClick={pause}>
-            Pause
-          </RippleButton>
-        )}
-        <RippleButton
-          className="btn btn-ghost px-6"
-          onClick={reset}
-        >
-          Reset
-        </RippleButton>
+      {/* Volume */}
+      <div className="flex items-center gap-3 w-full">
+        <svg className="w-4 h-4 shrink-0" style={{ color: 'var(--color-muted)' }} fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+        </svg>
+        <input type="range" min="0" max="100" defaultValue={currentVolume} onChange={handleVolume} className="flex-1 accent-accent" aria-label="Volume" />
+        <svg className="w-5 h-5 shrink-0" style={{ color: 'var(--color-muted)' }} fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
       </div>
 
       {/* Correct / Incorrect */}

@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
-  collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, onSnapshot, serverTimestamp
+  collection, doc, getDoc, setDoc, addDoc, deleteDoc, onSnapshot, serverTimestamp
 } from 'firebase/firestore'
-import {
-  ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject
-} from 'firebase/storage'
-import { db, storage } from '../firebase/config'
+import { db } from '../firebase/config'
+import { supabase } from '../supabase/client'
+
+const BUCKET = 'sounds'
 
 const DEFAULT_SETTINGS = {
   correctSoundId: 'default',
@@ -28,17 +28,11 @@ export function useUserData(uid) {
       return
     }
 
-    // Listen to settings
     const settingsRef = doc(db, 'users', uid, 'settings', 'main')
     const unsubSettings = onSnapshot(settingsRef, (snap) => {
-      if (snap.exists()) {
-        setSettings({ ...DEFAULT_SETTINGS, ...snap.data() })
-      } else {
-        setSettings(DEFAULT_SETTINGS)
-      }
+      setSettings(snap.exists() ? { ...DEFAULT_SETTINGS, ...snap.data() } : DEFAULT_SETTINGS)
     })
 
-    // Listen to sounds
     const soundsRef = collection(db, 'users', uid, 'sounds')
     const unsubSounds = onSnapshot(soundsRef, (snap) => {
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
@@ -46,7 +40,6 @@ export function useUserData(uid) {
       setSounds(list)
     })
 
-    // Listen to games
     const gamesRef = collection(db, 'users', uid, 'games')
     const unsubGames = onSnapshot(gamesRef, (snap) => {
       const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
@@ -54,68 +47,44 @@ export function useUserData(uid) {
       setGames(list)
     })
 
-    return () => {
-      unsubSettings()
-      unsubSounds()
-      unsubGames()
-    }
+    return () => { unsubSettings(); unsubSounds(); unsubGames() }
   }, [uid])
 
   const uploadSound = useCallback(async (file) => {
-    if (!uid) return
+    if (!uid || !supabase) return
     setUploading(true)
     setUploadProgress(0)
 
     const path = `users/${uid}/sounds/${file.name}`
-    const sRef = storageRef(storage, path)
-    const task = uploadBytesResumable(sRef, file)
+    const { error } = await supabase.storage.from(BUCKET).upload(path, file, { upsert: true })
+    if (error) {
+      console.error('Upload error:', error)
+      setUploading(false)
+      return
+    }
 
-    return new Promise((resolve, reject) => {
-      task.on(
-        'state_changed',
-        (snapshot) => {
-          setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
-        },
-        (err) => {
-          console.error('Upload error:', err)
-          setUploading(false)
-          reject(err)
-        },
-        async () => {
-          try {
-            const url = await getDownloadURL(task.snapshot.ref)
-            const soundsRef = collection(db, 'users', uid, 'sounds')
-            await addDoc(soundsRef, {
-              name: file.name.replace(/\.[^.]+$/, ''),
-              filename: file.name,
-              storagePath: path,
-              url,
-              createdAt: serverTimestamp(),
-            })
-            setUploading(false)
-            setUploadProgress(0)
-            resolve()
-          } catch (err) {
-            console.error('Firestore write error:', err)
-            setUploading(false)
-            reject(err)
-          }
-        }
-      )
+    const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(path)
+
+    await addDoc(collection(db, 'users', uid, 'sounds'), {
+      name: file.name.replace(/\.[^.]+$/, ''),
+      filename: file.name,
+      storagePath: path,
+      url: publicUrl,
+      createdAt: serverTimestamp(),
     })
+
+    setUploadProgress(100)
+    setUploading(false)
   }, [uid])
 
   const deleteSound = useCallback(async (soundId, storagePath) => {
     if (!uid) return
-    try {
-      const sRef = storageRef(storage, storagePath)
-      await deleteObject(sRef)
-    } catch (err) {
-      console.warn('Storage delete error (may already be gone):', err)
+    if (supabase) {
+      const { error } = await supabase.storage.from(BUCKET).remove([storagePath])
+      if (error) console.warn('Storage delete error:', error)
     }
     await deleteDoc(doc(db, 'users', uid, 'sounds', soundId))
 
-    // If this sound was assigned, reset to default
     const settingsRef = doc(db, 'users', uid, 'settings', 'main')
     const snap = await getDoc(settingsRef)
     if (snap.exists()) {
@@ -138,13 +107,8 @@ export function useUserData(uid) {
 
   const saveGame = useCallback(async ({ teamA, teamB, scoreA, scoreB }) => {
     if (!uid) return
-    const gamesRef = collection(db, 'users', uid, 'games')
-    await addDoc(gamesRef, {
-      teamA,
-      teamB,
-      scoreA,
-      scoreB,
-      date: serverTimestamp(),
+    await addDoc(collection(db, 'users', uid, 'games'), {
+      teamA, teamB, scoreA, scoreB, date: serverTimestamp(),
     })
   }, [uid])
 
