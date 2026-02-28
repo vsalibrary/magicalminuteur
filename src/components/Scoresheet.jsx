@@ -214,7 +214,7 @@ export function Scoresheet({ user, saveGame, scores }) {
   }
 
   return (
-    <div className="card p-4 md:p-6 flex flex-col gap-5">
+    <div className="card p-4 md:p-6 flex flex-col gap-5 overflow-hidden">
       <h2 className="section-label text-center">Scoresheet</h2>
 
       {/* Team name inputs */}
@@ -225,7 +225,7 @@ export function Scoresheet({ user, saveGame, scores }) {
             <input
               value={teamA}
               onChange={(e) => setTeamA(e.target.value)}
-              className="flex-1 bg-subtle border border-subtle rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+              className="flex-1 min-w-0 bg-subtle border border-subtle rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
               style={{ color: 'var(--color-text)' }}
             />
             <button onClick={() => setTeamA(randomName(ANIMALS))} className="btn btn-ghost text-xs px-2" title="Random name">↺</button>
@@ -237,7 +237,7 @@ export function Scoresheet({ user, saveGame, scores }) {
             <input
               value={teamB}
               onChange={(e) => setTeamB(e.target.value)}
-              className="flex-1 bg-subtle border border-subtle rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
+              className="flex-1 min-w-0 bg-subtle border border-subtle rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent transition-colors"
               style={{ color: 'var(--color-text)' }}
             />
             <button onClick={() => setTeamB(randomName(FRUITS))} className="btn btn-ghost text-xs px-2" title="Random name">↺</button>

@@ -70,12 +70,12 @@ export function Timer({ timer, audio, sounds, settings, onCorrect }) {
   }
 
   return (
-    <div className="card p-6 flex flex-col items-center gap-5 h-full">
+    <div className="card p-4 md:p-6 flex flex-col items-center gap-3 md:gap-5 h-full">
       <h2 className="section-label">Countdown Timer</h2>
 
       {/* SVG Ring */}
       <div className="relative">
-        <svg width="220" height="220" viewBox="0 0 220 220">
+        <svg className="w-36 h-36 md:w-[220px] md:h-[220px]" viewBox="0 0 220 220">
           {/* Background track */}
           <circle
             cx="110" cy="110" r={R}
@@ -151,20 +151,20 @@ export function Timer({ timer, audio, sounds, settings, onCorrect }) {
       </div>
 
       {/* Correct / Incorrect */}
-      <div className="grid grid-cols-2 gap-4 w-full">
+      <div className="grid grid-cols-2 gap-3 w-full">
         <RippleButton
-          className="btn-action bg-success/20 hover:bg-success/30 border border-success/40 text-success font-bold text-lg py-8 rounded-2xl"
+          className="btn-action bg-success/20 hover:bg-success/30 border border-success/40 text-success font-bold py-4 md:py-8 rounded-2xl"
           onClick={handleCorrect}
         >
-          <span className="text-3xl mb-1 block">✓</span>
-          Correct
+          <span className="text-2xl md:text-3xl mb-0.5 block">✓</span>
+          <span className="text-sm md:text-lg">Correct</span>
         </RippleButton>
         <RippleButton
-          className="btn-action bg-danger/20 hover:bg-danger/30 border border-danger/40 text-danger font-bold text-lg py-8 rounded-2xl"
+          className="btn-action bg-danger/20 hover:bg-danger/30 border border-danger/40 text-danger font-bold py-4 md:py-8 rounded-2xl"
           onClick={handleIncorrect}
         >
-          <span className="text-3xl mb-1 block">✗</span>
-          Incorrect
+          <span className="text-2xl md:text-3xl mb-0.5 block">✗</span>
+          <span className="text-sm md:text-lg">Incorrect</span>
         </RippleButton>
       </div>
     </div>
