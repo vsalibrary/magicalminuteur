@@ -4,7 +4,7 @@ let sharedCtx = null
 let sharedGain = null
 let currentCustomAudio = null
 
-function playFile(url) {
+function playFile(url, fallback) {
   if (currentCustomAudio) {
     currentCustomAudio.pause()
     currentCustomAudio.currentTime = 0
@@ -17,10 +17,68 @@ function playFile(url) {
   currentCustomAudio = audioEl
   const source = ctx.createMediaElementSource(audioEl)
   source.connect(gain)
-  audioEl.play().catch(console.error)
+
+  let didFallback = false
+  const tryFallback = () => {
+    if (didFallback) return
+    didFallback = true
+    if (currentCustomAudio === audioEl) currentCustomAudio = null
+    fallback?.()
+  }
+
+  audioEl.addEventListener('error', tryFallback)
   audioEl.addEventListener('ended', () => {
     if (currentCustomAudio === audioEl) currentCustomAudio = null
   })
+  audioEl.play().catch(tryFallback)
+}
+
+function playCorrectSynth() {
+  const { ctx, gain } = getCtx()
+  const t = ctx.currentTime
+  ;[523.25, 659.25, 783.99].forEach((freq, i) => {
+    const osc = ctx.createOscillator()
+    const env = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = freq
+    env.gain.setValueAtTime(0, t)
+    env.gain.linearRampToValueAtTime(0.3, t + 0.02 + i * 0.03)
+    env.gain.exponentialRampToValueAtTime(0.001, t + 0.6)
+    osc.connect(env); env.connect(gain)
+    osc.start(t + i * 0.03); osc.stop(t + 0.7)
+  })
+}
+
+function playIncorrectSynth() {
+  const { ctx, gain } = getCtx()
+  const t = ctx.currentTime
+  ;[300, 220].forEach((freq, i) => {
+    const osc = ctx.createOscillator()
+    const env = ctx.createGain()
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(freq, t + i * 0.15)
+    osc.frequency.linearRampToValueAtTime(freq * 0.7, t + i * 0.15 + 0.3)
+    env.gain.setValueAtTime(0.4, t + i * 0.15)
+    env.gain.exponentialRampToValueAtTime(0.001, t + i * 0.15 + 0.35)
+    osc.connect(env); env.connect(gain)
+    osc.start(t + i * 0.15); osc.stop(t + i * 0.15 + 0.4)
+  })
+}
+
+function playTimerEndSynth() {
+  const { ctx, gain } = getCtx()
+  const t = ctx.currentTime
+  for (let i = 0; i < 3; i++) {
+    const osc = ctx.createOscillator()
+    const env = ctx.createGain()
+    osc.type = 'square'
+    osc.frequency.value = 220
+    env.gain.setValueAtTime(0.5, t + i * 0.3)
+    env.gain.setValueAtTime(0.5, t + i * 0.3 + 0.22)
+    env.gain.linearRampToValueAtTime(0, t + i * 0.3 + 0.3)
+    osc.connect(env); env.connect(gain)
+    osc.start(t + i * 0.3); osc.stop(t + i * 0.3 + 0.3)
+  }
 }
 
 function getCtx() {
@@ -45,9 +103,9 @@ export function useAudio() {
     }
   }, [])
 
-  const playCorrect = useCallback(() => { playFile('/sounds/correct.mp3') }, [])
-  const playIncorrect = useCallback(() => { playFile('/sounds/incorrect.mp3') }, [])
-  const playTimerEnd = useCallback(() => { playFile('/sounds/timesup.mp3') }, [])
+  const playCorrect = useCallback(() => { playFile('/sounds/correct.mp3', playCorrectSynth) }, [])
+  const playIncorrect = useCallback(() => { playFile('/sounds/incorrect.mp3', playIncorrectSynth) }, [])
+  const playTimerEnd = useCallback(() => { playFile('/sounds/timesup.mp3', playTimerEndSynth) }, [])
 
   const playFiveSecond = useCallback(() => {
     const { ctx, gain } = getCtx()
