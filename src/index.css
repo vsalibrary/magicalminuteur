@@ -145,6 +145,13 @@
   }
 }
 
+/* ─── Mobile overrides ──────────────────────────────── */
+@media (max-width: 639px) {
+  .score-btn {
+    @apply text-[10px] px-1 py-0.5;
+  }
+}
+
 /* ─── Keyframes ─────────────────────────────────────── */
 @layer utilities {
   @keyframes ripple-anim {

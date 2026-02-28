@@ -52,6 +52,7 @@ export function useUserData(uid) {
 
   const uploadSound = useCallback(async (file) => {
     if (!uid || !supabase) return
+    if (sounds.length >= 4) return
     setUploading(true)
     setUploadProgress(0)
 
@@ -75,7 +76,7 @@ export function useUserData(uid) {
 
     setUploadProgress(100)
     setUploading(false)
-  }, [uid])
+  }, [uid, sounds])
 
   const deleteSound = useCallback(async (soundId, storagePath) => {
     if (!uid) return

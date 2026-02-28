@@ -2,6 +2,7 @@ import { useRef, useCallback } from 'react'
 
 let sharedCtx = null
 let sharedGain = null
+let currentCustomAudio = null
 
 function getCtx() {
   if (!sharedCtx) {
@@ -114,11 +115,26 @@ export function useAudio() {
     osc.stop(t + 0.15)
   }, [])
 
+  const stopCustom = useCallback(() => {
+    if (currentCustomAudio) {
+      currentCustomAudio.pause()
+      currentCustomAudio.currentTime = 0
+      currentCustomAudio = null
+    }
+  }, [])
+
   const playCustom = useCallback((url) => {
+    if (currentCustomAudio) {
+      currentCustomAudio.pause()
+      currentCustomAudio.currentTime = 0
+      currentCustomAudio = null
+    }
+
     const { ctx, gain } = getCtx()
     const audioEl = new Audio()
     audioEl.crossOrigin = 'anonymous'
     audioEl.src = url
+    currentCustomAudio = audioEl
 
     const source = ctx.createMediaElementSource(audioEl)
     const analyser = ctx.createAnalyser()
@@ -128,16 +144,20 @@ export function useAudio() {
     analyser.connect(gain)
 
     audioEl.play().catch(console.error)
+    audioEl.addEventListener('ended', () => {
+      if (currentCustomAudio === audioEl) currentCustomAudio = null
+    })
 
     return {
       analyser,
       stop: () => {
         audioEl.pause()
         audioEl.currentTime = 0
+        if (currentCustomAudio === audioEl) currentCustomAudio = null
       },
       audioEl,
     }
   }, [])
 
-  return { volumeRef, setVolume, playCorrect, playIncorrect, playTimerEnd, playFiveSecond, playBeep, playCustom }
+  return { volumeRef, setVolume, playCorrect, playIncorrect, playTimerEnd, playFiveSecond, playBeep, playCustom, stopCustom }
 }

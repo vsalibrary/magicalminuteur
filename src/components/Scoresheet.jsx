@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { RippleButton } from './ui/RippleButton'
 import { ConfirmDialog } from './ui/ConfirmDialog'
-import { ScoreHistory } from './ScoreHistory'
 
 const ANIMALS = ['Eagles', 'Tigers', 'Pandas', 'Lions', 'Foxes', 'Wolves', 'Hawks', 'Bears', 'Owls', 'Sharks']
 const FRUITS = ['Mangoes', 'Kiwis', 'Lychees', 'Papayas', 'Loquats', 'Jackfruits', 'Rambutans', 'Durians', 'Longans', 'Starfruits']
@@ -86,7 +85,7 @@ function PassoverCell({ value, enabled, onChange, team }) {
 const PAGE_SIZE = 4
 const TOTAL_PAGES = Math.ceil(ROUNDS.length / PAGE_SIZE)
 
-export function Scoresheet({ user, games, saveGame, scores }) {
+export function Scoresheet({ user, saveGame, scores }) {
   const { cells, teamA, teamB, page, updateCell, setTeamA, setTeamB, setPage, resetCells } = scores
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [saveToast, setSaveToast] = useState(false)
@@ -267,13 +266,18 @@ export function Scoresheet({ user, games, saveGame, scores }) {
       </div>
 
       {/* Score table */}
-      <div className="overflow-x-auto -mx-2 px-2">
-        <table className="w-full text-sm min-w-[340px]">
+      <div>
+        <table className="w-full text-sm table-fixed">
+          <colgroup>
+            <col style={{ width: '36%' }} />
+            <col style={{ width: '32%' }} />
+            <col style={{ width: '32%' }} />
+          </colgroup>
           <thead>
             <tr className="border-b border-subtle">
               <th className="text-left py-2 pr-2 text-muted font-medium text-xs">Round</th>
-              <th className="py-2 text-accent text-xs font-medium truncate max-w-[100px]">{teamA}</th>
-              <th className="py-2 text-warn text-xs font-medium truncate max-w-[100px]">{teamB}</th>
+              <th className="py-2 text-accent text-xs font-medium truncate">{teamA}</th>
+              <th className="py-2 text-warn text-xs font-medium truncate">{teamB}</th>
             </tr>
           </thead>
           <tbody>
@@ -313,8 +317,6 @@ export function Scoresheet({ user, games, saveGame, scores }) {
           </div>
         )}
       </div>
-
-      {user && <ScoreHistory games={games} />}
 
       {showResetConfirm && (
         <ConfirmDialog

@@ -11,6 +11,7 @@ import { Timer } from './components/Timer'
 import { Soundboard } from './components/Soundboard'
 import { Scoresheet } from './components/Scoresheet'
 import { Overlay } from './components/Overlay'
+import { AdminPage } from './components/AdminPage'
 
 export default function App() {
   const { user, signIn, signOut } = useAuth()
@@ -24,6 +25,7 @@ export default function App() {
   const [fiveSecKey, setFiveSecKey] = useState(0)
   const [timesUpKey, setTimesUpKey] = useState(0)
   const [confettiKey, setConfettiKey] = useState(0)
+  const [showAdmin, setShowAdmin] = useState(false)
 
   // Sync volume from user settings
   useEffect(() => {
@@ -50,6 +52,11 @@ export default function App() {
   const handleCorrect = () => {
     setConfettiKey(k => k + 1)
     timer.reset()
+  }
+
+  const handleRestore = (game) => {
+    scores.setTeamA(game.teamA || 'Team A')
+    scores.setTeamB(game.teamB || 'Team B')
   }
 
   // Keyboard shortcuts
@@ -93,21 +100,13 @@ export default function App() {
   )
   const soundboardPanel = (
     <Soundboard
-      user={user}
       audio={audio}
       sounds={sounds}
-      settings={settings}
-      uploading={uploading}
-      uploadProgress={uploadProgress}
-      uploadSound={uploadSound}
-      deleteSound={deleteSound}
-      assignSound={assignSound}
     />
   )
   const scoresheetPanel = (
     <Scoresheet
       user={user}
-      games={games}
       saveGame={saveGame}
       scores={scores}
     />
@@ -115,7 +114,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--color-bg)' }}>
-      <Header user={user} signIn={signIn} signOut={signOut} theme={theme} toggleTheme={toggleTheme} />
+      <Header
+        user={user}
+        signIn={signIn}
+        signOut={signOut}
+        theme={theme}
+        toggleTheme={toggleTheme}
+        onAdmin={() => setShowAdmin(true)}
+      />
 
       <main className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 pb-24 md:pb-6">
         {/* Desktop: top row (Timer | Scoresheet same height), bottom row (Soundboard full-width) */}
@@ -136,12 +142,29 @@ export default function App() {
       </main>
 
       <Footer />
-      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} user={user} />
       <Overlay
         fiveSecKey={fiveSecKey}
         timesUpKey={timesUpKey}
         confettiKey={confettiKey}
       />
+
+      {showAdmin && (
+        <AdminPage
+          user={user}
+          sounds={sounds}
+          settings={settings}
+          uploading={uploading}
+          uploadProgress={uploadProgress}
+          uploadSound={uploadSound}
+          deleteSound={deleteSound}
+          assignSound={assignSound}
+          audio={audio}
+          games={games}
+          onRestore={handleRestore}
+          onClose={() => setShowAdmin(false)}
+        />
+      )}
     </div>
   )
 }

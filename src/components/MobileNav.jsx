@@ -1,4 +1,4 @@
-const TABS = [
+const BASE_TABS = [
   {
     id: 'timer',
     label: 'Timer',
@@ -6,15 +6,6 @@ const TABS = [
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <circle cx="12" cy="12" r="9" strokeWidth="2"/>
         <path strokeLinecap="round" strokeWidth="2" d="M12 7v5l3 3"/>
-      </svg>
-    ),
-  },
-  {
-    id: 'soundboard',
-    label: 'Sounds',
-    icon: (
-      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
       </svg>
     ),
   },
@@ -29,10 +20,21 @@ const TABS = [
   },
 ]
 
-export function MobileNav({ activeTab, setActiveTab }) {
+const SOUNDS_TAB = {
+  id: 'soundboard',
+  label: 'Sounds',
+  icon: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+    </svg>
+  ),
+}
+
+export function MobileNav({ activeTab, setActiveTab, user }) {
+  const tabs = user ? [...BASE_TABS, SOUNDS_TAB] : BASE_TABS
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-white/10 bg-[#0c0c12]/95 backdrop-blur-md md:hidden">
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}

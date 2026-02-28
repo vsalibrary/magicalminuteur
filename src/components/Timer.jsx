@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { RippleButton } from './ui/RippleButton'
 
 const R = 95
@@ -17,30 +18,59 @@ export function Timer({ timer, audio, sounds, settings, onCorrect }) {
   const offset = CIRC * (1 - (progress || 0) / 100)
   const currentVolume = Math.round((audio?.volumeRef?.current || 0.8) * 100)
   const handleVolume = (e) => audio?.setVolume(Number(e.target.value) / 100)
+  const [playingButton, setPlayingButton] = useState(null)
 
   const handleCorrect = () => {
-    if (settings?.correctSoundId === 'default') {
-      audio.playCorrect()
-    } else {
+    if (playingButton === 'correct') {
+      audio.stopCustom()
+      setPlayingButton(null)
+      return
+    }
+    if (playingButton === 'incorrect') {
+      audio.stopCustom()
+      setPlayingButton(null)
+    }
+    if (settings?.correctSoundId !== 'default') {
       const sound = sounds?.find((s) => s.id === settings?.correctSoundId)
-      if (sound) audio.playCustom(sound.url)
-      else audio.playCorrect()
+      if (sound) {
+        const { audioEl } = audio.playCustom(sound.url)
+        setPlayingButton('correct')
+        audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'correct' ? null : p))
+      } else {
+        audio.playCorrect()
+      }
+    } else {
+      audio.playCorrect()
     }
     onCorrect?.()
   }
 
   const handleIncorrect = () => {
-    if (settings?.incorrectSoundId === 'default') {
-      audio.playIncorrect()
-    } else {
+    if (playingButton === 'incorrect') {
+      audio.stopCustom()
+      setPlayingButton(null)
+      return
+    }
+    if (playingButton === 'correct') {
+      audio.stopCustom()
+      setPlayingButton(null)
+    }
+    if (settings?.incorrectSoundId !== 'default') {
       const sound = sounds?.find((s) => s.id === settings?.incorrectSoundId)
-      if (sound) audio.playCustom(sound.url)
-      else audio.playIncorrect()
+      if (sound) {
+        const { audioEl } = audio.playCustom(sound.url)
+        setPlayingButton('incorrect')
+        audioEl.addEventListener('ended', () => setPlayingButton(p => p === 'incorrect' ? null : p))
+      } else {
+        audio.playIncorrect()
+      }
+    } else {
+      audio.playIncorrect()
     }
   }
 
   return (
-    <div className="card p-6 flex flex-col items-center justify-center gap-5 h-full">
+    <div className="card p-6 flex flex-col items-center gap-5 h-full">
       <h2 className="section-label">Countdown Timer</h2>
 
       {/* SVG Ring */}
