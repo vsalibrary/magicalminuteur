@@ -19,6 +19,18 @@ export function Header({ user, signIn, signOut, theme, toggleTheme, onAdmin }) {
           {theme === 'dark' ? '☀' : '☾'}
         </button>
         {user && (
+          <a
+            href="/display"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-ghost text-sm px-3 py-2"
+            title="Open projector view"
+            aria-label="Projector view"
+          >
+            ⛶
+          </a>
+        )}
+        {user && (
           <button
             onClick={onAdmin}
             className="btn btn-ghost text-sm px-3 py-2"

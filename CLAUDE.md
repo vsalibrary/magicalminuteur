@@ -165,3 +165,11 @@ Score buttons auto-shrink on mobile (`max-width: 639px`) via CSS media query.
 
 ## Known TODOs
 - icon-192.png and icon-512.png are placeholder dark squares — replace with proper icons for PWA install prompt
+- ~~**Projector/Audience View**~~ ✓ Done — `/display` route, `src/components/DisplayView.jsx`, `⛶` button in Header opens in new tab.
+- **Timer urgency animation**: timer ring/colour shifts green → amber → red as time runs low; subtle pulse in last 5 seconds.
+- **Haptic feedback**: `navigator.vibrate()` on mobile — short tap on correct/incorrect, long buzz on time's up.
+- **QR code for cross-device join**: show a QR code that opens the session on another device without requiring manual sign-in to the same account.
+- **Score point animations**: when +2 or +3 is awarded, animate a flying score number up from the cell (mobile-game style).
+- **Per-team colour/identity**: teams pick a colour that tints their score column, confetti, and scoreboard side.
+- **Ambient background sound**: optional looping background music that auto-ducks when a sound effect fires; separate soundboard category.
+- **End-of-game summary + Finish Game button**: "Finish Game" button (alongside Save Game) triggers a full-screen results card showing winner, final scores, and highest-scoring round. Offers share/export. Then saves and resets.
