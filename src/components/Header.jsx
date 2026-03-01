@@ -1,5 +1,8 @@
 import { AuthButton } from './AuthButton'
 
+const THEME_ICON  = { dark: '☀', light: '✦', arcade: '☾' }
+const THEME_LABEL = { dark: 'Switch to light mode', light: 'Switch to arcade mode', arcade: 'Switch to dark mode' }
+
 export function Header({ user, signIn, signOut, theme, toggleTheme, onAdmin }) {
   return (
     <header className="sticky top-0 z-30 flex items-center justify-between px-4 pb-3 border-b border-subtle bg-[#0c0c12]/80 backdrop-blur-md" style={{ borderColor: 'var(--color-border)', backgroundColor: 'color-mix(in srgb, var(--color-bg) 80%, transparent)', paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}>
@@ -13,10 +16,10 @@ export function Header({ user, signIn, signOut, theme, toggleTheme, onAdmin }) {
         <button
           onClick={toggleTheme}
           className="btn btn-ghost text-sm px-3 py-2"
-          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={THEME_LABEL[theme] || 'Toggle theme'}
           aria-label="Toggle theme"
         >
-          {theme === 'dark' ? '☀' : '☾'}
+          {THEME_ICON[theme] || '☀'}
         </button>
         {user && (
           <a

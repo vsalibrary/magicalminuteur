@@ -1,5 +1,6 @@
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSession'
+import { useTheme } from '../hooks/useTheme'
 import { ROUNDS, totalScores } from '../utils/scores'
 
 const R = 130
@@ -13,6 +14,7 @@ function getRingColor(progress) {
 }
 
 export function DisplayView() {
+  useTheme()
   const { user, signIn } = useAuth()
   const { timer, scores } = useSession(user?.uid || null)
 
