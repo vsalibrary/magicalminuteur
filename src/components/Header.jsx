@@ -26,7 +26,7 @@ export function Header({ user, signIn, signOut, theme, toggleTheme, onAdmin }) {
             href="/display"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-ghost text-sm px-3 py-2"
+            className="btn btn-ghost text-sm px-3 py-2 hidden md:inline-flex"
             title="Open projector view"
             aria-label="Projector view"
           >
