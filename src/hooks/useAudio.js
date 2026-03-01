@@ -126,7 +126,7 @@ export function useAudio() {
 
   const playCorrect = useCallback(() => { playFile('/sounds/correct.mp3', playCorrectSynth) }, [])
   const playIncorrect = useCallback(() => { playFile('/sounds/incorrect.mp3', playIncorrectSynth) }, [])
-  const playTimerEnd = useCallback(() => { playFile('/sounds/timesup.mp3', playTimerEndSynth) }, [])
+  const playTimerEnd = useCallback((url) => { playFile(url || '/sounds/timesup.mp3', playTimerEndSynth) }, [])
 
   const playFiveSecond = useCallback(() => {
     const { ctx, gain } = getCtx()

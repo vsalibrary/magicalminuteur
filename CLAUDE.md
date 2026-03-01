@@ -17,12 +17,17 @@ npm run preview  # Preview production build
 
 ## Deployment
 - GitHub: `https://github.com/vsalibrary/magicalminuteur` (account: vsalibrary)
-- Netlify: `https://battleofthebooks.netlify.app` (auto-deploys from main branch)
+- Netlify: `https://battleofthebooks.netlify.app` (auto-deploys from main branch; uses Netlify dashboard env vars)
+- Firebase Hosting: `https://mr-mac-s-magical-minuteur.web.app` (auto-deploys from main via GitHub Actions)
 - Firebase project: `mr-mac-s-magical-minuteur`
 - Firestore rules: `firebase deploy --only firestore:rules --project mr-mac-s-magical-minuteur`
 - Supabase project: `rfqijgnkucbmnaepxqzm` — `sounds` bucket must be Public with anon INSERT/SELECT/DELETE policies
 
-## Environment Variables (`.env`)
+## Environment Variables
+Firebase and Supabase anon keys are public-by-design (security enforced server-side via Firestore rules + Auth).
+- `.env` — local dev (gitignored)
+- `.env.production` — committed to repo; used by Vite during `npm run build` (picked up by both Netlify and Firebase Hosting GitHub Actions)
+- No GitHub secrets needed for `VITE_*` variables
 ```
 VITE_FIREBASE_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN
@@ -81,7 +86,10 @@ setConfettiKey(k => k + 1) // triggers confetti
 ### Firebase / Supabase Data Model
 ```
 Firestore:
-  users/{uid}/settings/main    — { correctSoundId, incorrectSoundId, volume }
+  users/{uid}/settings/main    — { correctSoundId, incorrectSoundId, timesUpSoundId,
+                                   soundboardSlot0, soundboardSlot1, soundboardSlot2, soundboardSlot3,
+                                   volume }
+                                 All sound IDs default to 'default' (meaning use built-in sound)
   users/{uid}/sounds/{soundId} — { name, filename, storagePath, url, createdAt }
   users/{uid}/games/{gameId}   — { teamA, teamB, scoreA, scoreB, cells, date }
   users/{uid}/session/main     — { startedAt, originalTotal, isPaused, remainingOnPause,
@@ -156,8 +164,6 @@ Score buttons auto-shrink on mobile (`max-width: 639px`) via CSS media query.
   always call the reset callback FIRST so `isActive:false` reaches Firestore before the sound write
 
 ## Known TODOs
-- **Assign uploaded sounds to soundboard**: currently soundboard buttons map to `sounds[0..3]` by
-  upload order. Need a way for users to assign specific uploaded sounds to specific soundboard slots.
 - **Safe area on Admin (settings) page**: AdminPage is a fixed fullscreen overlay; its internal header
   (`px-4 py-3`) needs the same `paddingTop: max(env(safe-area-inset-top), 12px)` treatment as the
   main Header so the "Admin" title isn't hidden behind the iOS status bar on PWA.

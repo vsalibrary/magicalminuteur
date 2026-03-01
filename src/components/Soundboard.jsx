@@ -14,11 +14,20 @@ const DEFAULT_SLOTS = [
   { id: 'default-sadtrombone', name: 'Sad Trombone', url: '/sounds/sadtrombone.mp3' },
 ]
 
-export function Soundboard({ audio, sounds, user, onPlay, onStop }) {
+export function Soundboard({ audio, sounds, settings, user, onPlay, onStop }) {
   const [playingSlot, setPlayingSlot] = useState(null)
 
+  const getSlotSound = (idx) => {
+    const assignedId = settings?.[`soundboardSlot${idx}`]
+    if (assignedId && assignedId !== 'default') {
+      const found = sounds?.find(s => s.id === assignedId)
+      if (found) return found
+    }
+    return DEFAULT_SLOTS[idx]
+  }
+
   const handleSlot = (idx) => {
-    const sound = sounds[idx] || DEFAULT_SLOTS[idx]
+    const sound = getSlotSound(idx)
     if (!sound) return
     if (playingSlot === idx) {
       audio.stopCustom()
@@ -40,7 +49,7 @@ export function Soundboard({ audio, sounds, user, onPlay, onStop }) {
       <h2 className="section-label text-center">Soundboard</h2>
       <div className="grid grid-cols-4 md:grid-cols-1 gap-3">
         {PS_SLOTS.map((slot, idx) => {
-          const sound = sounds[idx] || DEFAULT_SLOTS[idx]
+          const sound = getSlotSound(idx)
           const isPlaying = playingSlot === idx
           return (
             <button

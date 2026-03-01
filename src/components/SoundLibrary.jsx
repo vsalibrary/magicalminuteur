@@ -128,22 +128,31 @@ export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress
       )}
 
       <div className="space-y-3">
-        {sounds.map((sound) => (
-          <SoundCard
-            key={sound.id}
-            sound={sound}
-            isPlaying={playingId === sound.id}
-            onPlay={() => handlePlay(sound)}
-            onStop={handleStop}
-            onAssignCorrect={() => assignSound('correct', settings.correctSoundId === sound.id ? 'default' : sound.id)}
-            onAssignIncorrect={() => assignSound('incorrect', settings.incorrectSoundId === sound.id ? 'default' : sound.id)}
-            onDelete={() => setDeleteTarget({ id: sound.id, storagePath: sound.storagePath })}
-            bars={playingId === sound.id ? analyserBars : null}
-            isCorrectAssigned={settings.correctSoundId === sound.id}
-            isIncorrectAssigned={settings.incorrectSoundId === sound.id}
-            canManage={!!user}
-          />
-        ))}
+        {sounds.map((sound) => {
+          const assignedSlots = new Set([
+            settings?.correctSoundId   === sound.id && 'correct',
+            settings?.incorrectSoundId === sound.id && 'incorrect',
+            settings?.timesUpSoundId   === sound.id && 'timesup',
+            settings?.soundboardSlot0  === sound.id && 'slot0',
+            settings?.soundboardSlot1  === sound.id && 'slot1',
+            settings?.soundboardSlot2  === sound.id && 'slot2',
+            settings?.soundboardSlot3  === sound.id && 'slot3',
+          ].filter(Boolean))
+          return (
+            <SoundCard
+              key={sound.id}
+              sound={sound}
+              isPlaying={playingId === sound.id}
+              onPlay={() => handlePlay(sound)}
+              onStop={handleStop}
+              onAssign={(slotKey) => assignSound(slotKey, assignedSlots.has(slotKey) ? 'default' : sound.id)}
+              onDelete={() => setDeleteTarget({ id: sound.id, storagePath: sound.storagePath })}
+              bars={playingId === sound.id ? analyserBars : null}
+              assignedSlots={assignedSlots}
+              canManage={!!user}
+            />
+          )
+        })}
       </div>
 
       {deleteTarget && (

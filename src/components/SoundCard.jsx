@@ -1,17 +1,26 @@
+import React from 'react'
 import { AudioVisualizer } from './AudioVisualizer'
 import { RippleButton } from './ui/RippleButton'
+
+const ASSIGNMENT_SLOTS = [
+  { key: 'slot0',     symbol: '△', label: "Soundboard △", color: '#4ade80', glow: 'rgba(74,222,128,0.4)' },
+  { key: 'slot1',     symbol: '○', label: "Soundboard ○", color: '#f87171', glow: 'rgba(248,113,113,0.4)' },
+  { key: 'slot2',     symbol: '×', label: "Soundboard ×", color: '#60a5fa', glow: 'rgba(96,165,250,0.4)' },
+  { key: 'slot3',     symbol: '□', label: "Soundboard □", color: '#e879f9', glow: 'rgba(232,121,249,0.4)' },
+  { key: 'correct',   symbol: '✓', label: "Correct",      color: '#34d399', glow: 'rgba(52,211,153,0.4)' },
+  { key: 'incorrect', symbol: '✗', label: "Incorrect",    color: '#f87171', glow: 'rgba(248,113,113,0.4)' },
+  { key: 'timesup',   symbol: '⏱', label: "Time's Up",   color: '#fb923c', glow: 'rgba(251,146,60,0.4)' },
+]
 
 export function SoundCard({
   sound,
   isPlaying,
   onPlay,
   onStop,
-  onAssignCorrect,
-  onAssignIncorrect,
+  onAssign,
   onDelete,
   bars,
-  isCorrectAssigned,
-  isIncorrectAssigned,
+  assignedSlots,
   canManage,
 }) {
   return (
@@ -53,23 +62,23 @@ export function SoundCard({
 
       {/* Assignment buttons */}
       {canManage && (
-        <div className="flex gap-2">
-          <button
-            onClick={onAssignCorrect}
-            className={`score-btn flex-1 text-xs py-1.5 ${isCorrectAssigned ? 'score-btn-active border-success' : ''}`}
-            style={isCorrectAssigned ? { borderColor: '#34d399', boxShadow: '0 0 8px rgba(52,211,153,0.4)' } : {}}
-            title={isCorrectAssigned ? 'Click to unassign' : 'Set as correct sound'}
-          >
-            {isCorrectAssigned ? '✓ Correct ×' : 'Set as ✓'}
-          </button>
-          <button
-            onClick={onAssignIncorrect}
-            className={`score-btn flex-1 text-xs py-1.5 ${isIncorrectAssigned ? 'score-btn-active border-danger' : ''}`}
-            style={isIncorrectAssigned ? { borderColor: '#f87171', boxShadow: '0 0 8px rgba(248,113,113,0.4)' } : {}}
-            title={isIncorrectAssigned ? 'Click to unassign' : 'Set as incorrect sound'}
-          >
-            {isIncorrectAssigned ? '✗ Wrong ×' : 'Set as ✗'}
-          </button>
+        <div className="flex gap-1.5 flex-wrap">
+          {ASSIGNMENT_SLOTS.map((slot, i) => {
+            const active = assignedSlots?.has(slot.key)
+            return (
+              <React.Fragment key={slot.key}>
+                {i === 4 && <div className="w-px self-stretch bg-white/10 mx-0.5" />}
+                <button
+                  onClick={() => onAssign(slot.key)}
+                  className={`score-btn text-sm px-2 py-1 ${active ? 'score-btn-active' : ''}`}
+                  style={active ? { borderColor: slot.color, boxShadow: `0 0 8px ${slot.glow}`, color: slot.color } : {}}
+                  title={active ? `Remove from ${slot.label}` : `Assign to ${slot.label}`}
+                >
+                  {slot.symbol}
+                </button>
+              </React.Fragment>
+            )
+          })}
         </div>
       )}
     </div>

@@ -45,7 +45,10 @@ export default function App() {
   useEffect(() => {
     if (timer.justFinished) {
       setTimesUpKey(k => k + 1)
-      audio.playTimerEnd()
+      const customSound = settings?.timesUpSoundId !== 'default'
+        ? sounds?.find(s => s.id === settings?.timesUpSoundId)
+        : null
+      audio.playTimerEnd(customSound?.url)
     }
   }, [timer.justFinished])
 
@@ -112,6 +115,7 @@ export default function App() {
     <Soundboard
       audio={audio}
       sounds={sounds}
+      settings={settings}
       user={user}
       onPlay={(url) => user && timer.broadcastSound(url)}
       onStop={() => user && timer.broadcastSound(null)}

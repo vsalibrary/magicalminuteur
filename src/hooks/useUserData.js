@@ -10,7 +10,22 @@ const BUCKET = 'sounds'
 const DEFAULT_SETTINGS = {
   correctSoundId: 'default',
   incorrectSoundId: 'default',
+  timesUpSoundId: 'default',
+  soundboardSlot0: 'default',
+  soundboardSlot1: 'default',
+  soundboardSlot2: 'default',
+  soundboardSlot3: 'default',
   volume: 0.8,
+}
+
+const SLOT_TO_FIELD = {
+  correct: 'correctSoundId',
+  incorrect: 'incorrectSoundId',
+  timesup: 'timesUpSoundId',
+  slot0: 'soundboardSlot0',
+  slot1: 'soundboardSlot1',
+  slot2: 'soundboardSlot2',
+  slot3: 'soundboardSlot3',
 }
 
 export function useUserData(uid) {
@@ -91,8 +106,9 @@ export function useUserData(uid) {
     if (snap.exists()) {
       const data = snap.data()
       const updates = {}
-      if (data.correctSoundId === soundId) updates.correctSoundId = 'default'
-      if (data.incorrectSoundId === soundId) updates.incorrectSoundId = 'default'
+      for (const field of Object.values(SLOT_TO_FIELD)) {
+        if (data[field] === soundId) updates[field] = 'default'
+      }
       if (Object.keys(updates).length > 0) {
         await setDoc(settingsRef, updates, { merge: true })
       }
@@ -101,8 +117,9 @@ export function useUserData(uid) {
 
   const assignSound = useCallback(async (slot, soundId) => {
     if (!uid) return
+    const field = SLOT_TO_FIELD[slot]
+    if (!field) return
     const settingsRef = doc(db, 'users', uid, 'settings', 'main')
-    const field = slot === 'correct' ? 'correctSoundId' : 'incorrectSoundId'
     await setDoc(settingsRef, { [field]: soundId }, { merge: true })
   }, [uid])
 
