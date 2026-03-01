@@ -5,9 +5,8 @@ const R = 95
 const CIRC = 2 * Math.PI * R
 
 function getRingColor(progress) {
-  const p = progress || 0
-  const remaining = 100 - p
-  if (remaining > 30) return '#5b4fe8'
+  const remaining = 100 - (progress || 0)
+  if (remaining > 30) return '#4ade80'
   if (remaining > 15) return '#fbbf24'
   return '#f87171'
 }
@@ -81,7 +80,7 @@ export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }
       <h2 className="section-label hidden md:block">Countdown Timer</h2>
 
       {/* SVG Ring */}
-      <div className="relative">
+      <div className={`relative${isRunning && seconds <= 5 ? ' timer-pulsing' : ''}`}>
         <svg className="w-36 h-36 md:w-[220px] md:h-[220px]" viewBox="0 0 220 220">
           {/* Background track */}
           <circle

@@ -7,7 +7,7 @@ const CIRC = 2 * Math.PI * R
 
 function getRingColor(progress) {
   const remaining = 100 - (progress || 0)
-  if (remaining > 30) return '#5b4fe8'
+  if (remaining > 30) return '#4ade80'
   if (remaining > 15) return '#fbbf24'
   return '#f87171'
 }
@@ -80,7 +80,7 @@ export function DisplayView() {
       </div>
 
       {/* Timer ring */}
-      <div className="flex flex-col items-center">
+      <div className={`flex flex-col items-center${isRunning && seconds <= 5 ? ' timer-pulsing' : ''}`}>
         <svg
           style={{ width: 'clamp(220px, 35vw, 420px)', height: 'clamp(220px, 35vw, 420px)' }}
           viewBox="0 0 320 320"
