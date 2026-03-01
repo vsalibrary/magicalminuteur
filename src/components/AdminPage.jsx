@@ -10,8 +10,8 @@ export function AdminPage({ user, sounds, settings, uploading, uploadProgress, u
   return (
     <div className="fixed inset-0 z-40 flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--color-bg)' }}>
       <div
-        className="flex items-center justify-between px-4 py-3 border-b border-subtle shrink-0"
-        style={{ backgroundColor: 'var(--color-bg)', borderColor: 'var(--color-border)' }}
+        className="flex items-center justify-between px-4 pb-3 border-b border-subtle shrink-0"
+        style={{ backgroundColor: 'var(--color-bg)', borderColor: 'var(--color-border)', paddingTop: 'max(env(safe-area-inset-top, 0px), 12px)' }}
       >
         <h2 className="font-bold text-lg" style={{ color: 'var(--color-text)' }}>Admin</h2>
         <button onClick={onClose} className="btn btn-ghost text-sm px-3 py-2">✕ Close</button>

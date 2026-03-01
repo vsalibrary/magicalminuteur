@@ -164,6 +164,4 @@ Score buttons auto-shrink on mobile (`max-width: 639px`) via CSS media query.
   always call the reset callback FIRST so `isActive:false` reaches Firestore before the sound write
 
 ## Known TODOs
-- **Safe area on Admin (settings) page**: AdminPage is a fixed fullscreen overlay; its internal header
-  (`px-4 py-3`) needs the same `paddingTop: max(env(safe-area-inset-top), 12px)` treatment as the
-  main Header so the "Admin" title isn't hidden behind the iOS status bar on PWA.
+- icon-192.png and icon-512.png are placeholder dark squares — replace with proper icons for PWA install prompt
