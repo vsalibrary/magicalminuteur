@@ -173,3 +173,5 @@ Score buttons auto-shrink on mobile (`max-width: 639px`) via CSS media query.
 - **Per-team colour/identity**: teams pick a colour that tints their score column, confetti, and scoreboard side.
 - **Ambient background sound**: optional looping background music that auto-ducks when a sound effect fires; separate soundboard category.
 - **End-of-game summary + Finish Game button**: "Finish Game" button (alongside Save Game) triggers a full-screen results card showing winner, final scores, and highest-scoring round. Offers share/export. Then saves and resets.
+- **Microphone recording**: in Admin → Sound Library, allow user to record audio via microphone (MediaRecorder API), preview the recording, name it, then upload to Supabase and store alongside uploaded sounds. Appears on custom sounds page like any uploaded file.
+- **Cascading banana emojis**: celebratory banana rain effect (similar to confetti) triggered on some event.

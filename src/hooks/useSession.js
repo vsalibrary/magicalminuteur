@@ -42,6 +42,7 @@ export function useSession(uid) {
   const finishedFiredRef = useRef(false)
   const lastStartedAtRef = useRef(null)   // track current timer's startedAt value
   const lastSoundIdRef = useRef(null)
+  const soundSeededRef = useRef(false)   // true after first snapshot — prevents stale pendingSound replay on mount
 
   // Clock calibration:
   //   clockOffsetRef = (serverTime) - (Date.now())
@@ -101,11 +102,17 @@ export function useSession(uid) {
       if (data.page !== undefined) setPageState(data.page)
 
       // ── Sound sync ────────────────────────────────────────────
+      // On the first snapshot, seed lastSoundIdRef with whatever pendingSound
+      // is already in the document — without playing it. This prevents stale
+      // sounds from a previous session replaying every time the page loads.
       const ps = data.pendingSound
       if (ps?.id && ps.id !== lastSoundIdRef.current) {
         lastSoundIdRef.current = ps.id
-        setRemoteSoundEvent({ url: ps.url, key: Date.now() })
+        if (soundSeededRef.current) {
+          setRemoteSoundEvent({ url: ps.url, key: Date.now() })
+        }
       }
+      soundSeededRef.current = true
 
       setIsPaused(!!data.isPaused)
 
