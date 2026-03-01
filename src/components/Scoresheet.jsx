@@ -51,7 +51,7 @@ function PassoverCell({ value, enabled, onChange, team }) {
 const PAGE_SIZE = 4
 const TOTAL_PAGES = Math.ceil(ROUNDS.length / PAGE_SIZE)
 
-export function Scoresheet({ user, saveGame, scores }) {
+export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
   const { cells, teamA, teamB, colorA, colorB, page, updateCell, setTeamA, setTeamB, setColorA, setColorB, setPage, resetCells } = scores
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [saveToast, setSaveToast] = useState(false)
@@ -144,7 +144,7 @@ export function Scoresheet({ user, saveGame, scores }) {
           {isPrimaryA ? (
             <PrimaryCell
               value={primary}
-              onChange={v => updateCell(round.id, 'primary', v)}
+              onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.() }}
             />
           ) : (
             <PassoverCell
@@ -164,7 +164,7 @@ export function Scoresheet({ user, saveGame, scores }) {
           {!isPrimaryA ? (
             <PrimaryCell
               value={primary}
-              onChange={v => updateCell(round.id, 'primary', v)}
+              onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.() }}
             />
           ) : (
             <PassoverCell

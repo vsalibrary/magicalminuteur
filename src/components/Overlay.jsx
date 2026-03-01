@@ -15,10 +15,13 @@ function ConfettiPiece({ color, style }) {
   )
 }
 
-export function Overlay({ fiveSecKey, timesUpKey, confettiKey }) {
+const BANANA_COUNT = 18
+
+export function Overlay({ fiveSecKey, timesUpKey, confettiKey, bananaKey }) {
   const [fiveVisible, setFiveVisible] = useState(false)
   const [timesUpVisible, setTimesUpVisible] = useState(false)
   const [confettiVisible, setConfettiVisible] = useState(false)
+  const [bananaVisible, setBananaVisible] = useState(false)
 
   useEffect(() => {
     if (fiveSecKey === 0) return
@@ -40,6 +43,13 @@ export function Overlay({ fiveSecKey, timesUpKey, confettiKey }) {
     const t = setTimeout(() => setConfettiVisible(false), 3000)
     return () => clearTimeout(t)
   }, [confettiKey])
+
+  useEffect(() => {
+    if (bananaKey === 0) return
+    setBananaVisible(true)
+    const t = setTimeout(() => setBananaVisible(false), 2500)
+    return () => clearTimeout(t)
+  }, [bananaKey])
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none">
@@ -79,6 +89,28 @@ export function Overlay({ fiveSecKey, timesUpKey, confettiKey }) {
                 borderRadius: i % 3 === 0 ? '50%' : '2px',
               }}
             />
+          ))}
+        </div>
+      )}
+      {/* Banana rain */}
+      {bananaVisible && (
+        <div className="absolute inset-0 overflow-hidden">
+          {Array.from({ length: BANANA_COUNT }, (_, i) => (
+            <div
+              key={i}
+              className="absolute top-0 select-none"
+              style={{
+                left: `${(i / BANANA_COUNT) * 100 + (i % 3) * 1.5}%`,
+                fontSize: `${1.4 + (i % 4) * 0.3}rem`,
+                animationName: 'confetti-fall',
+                animationDuration: `${0.7 + (i % 6) * 0.18}s`,
+                animationDelay: `${(i * 0.09) % 0.6}s`,
+                animationTimingFunction: 'linear',
+                animationFillMode: 'forwards',
+              }}
+            >
+              🍌
+            </div>
           ))}
         </div>
       )}

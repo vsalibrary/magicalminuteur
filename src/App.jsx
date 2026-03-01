@@ -25,6 +25,7 @@ export default function App() {
   const [fiveSecKey, setFiveSecKey] = useState(0)
   const [timesUpKey, setTimesUpKey] = useState(0)
   const [confettiKey, setConfettiKey] = useState(0)
+  const [bananaKey, setBananaKey] = useState(0)
   const [showAdmin, setShowAdmin] = useState(false)
 
   // Sync volume from user settings
@@ -127,6 +128,7 @@ export default function App() {
       user={user}
       saveGame={saveGame}
       scores={scores}
+      onThreePoints={() => setBananaKey(k => k + 1)}
     />
   )
 
@@ -163,6 +165,7 @@ export default function App() {
         fiveSecKey={fiveSecKey}
         timesUpKey={timesUpKey}
         confettiKey={confettiKey}
+        bananaKey={bananaKey}
       />
 
       {showAdmin && (
