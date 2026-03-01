@@ -43,6 +43,7 @@ export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }
       try { audio.playCorrect() } catch {}
       broadcastUrl = '/sounds/correct.mp3'
     }
+    navigator.vibrate?.([50])
     onCorrect?.()
     timer.broadcastSound?.(broadcastUrl)
   }
@@ -71,6 +72,7 @@ export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }
       try { audio.playIncorrect() } catch {}
       broadcastUrl = '/sounds/incorrect.mp3'
     }
+    navigator.vibrate?.([50, 40, 50])
     onIncorrect?.()
     timer.broadcastSound?.(broadcastUrl)
   }

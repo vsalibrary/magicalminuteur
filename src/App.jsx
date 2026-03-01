@@ -44,6 +44,7 @@ export default function App() {
 
   useEffect(() => {
     if (timer.justFinished) {
+      navigator.vibrate?.([400, 100, 400])
       setTimesUpKey(k => k + 1)
       const customSound = settings?.timesUpSoundId !== 'default'
         ? sounds?.find(s => s.id === settings?.timesUpSoundId)
