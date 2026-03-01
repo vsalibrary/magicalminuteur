@@ -51,13 +51,13 @@ export function DisplayView() {
         <div className="flex flex-col items-center gap-3 flex-1">
           <span
             className="font-semibold tracking-widest uppercase"
-            style={{ color: 'rgba(255,255,255,0.45)', fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
+            style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
           >
             {scores.teamA}
           </span>
           <span
             className="font-bold tabular-nums"
-            style={{ color: '#ffffff', fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
+            style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
           >
             {scoreA}
           </span>
@@ -68,13 +68,13 @@ export function DisplayView() {
         <div className="flex flex-col items-center gap-3 flex-1">
           <span
             className="font-semibold tracking-widest uppercase"
-            style={{ color: 'rgba(255,255,255,0.45)', fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
+            style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
           >
             {scores.teamB}
           </span>
           <span
             className="font-bold tabular-nums"
-            style={{ color: '#ffffff', fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
+            style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
           >
             {scoreB}
           </span>

@@ -5,6 +5,7 @@ import { ROUNDS, totalScores } from '../utils/scores'
 
 const ANIMALS = ['Eagles', 'Tigers', 'Pandas', 'Lions', 'Foxes', 'Wolves', 'Hawks', 'Bears', 'Owls', 'Sharks']
 const FRUITS = ['Mangoes', 'Kiwis', 'Lychees', 'Papayas', 'Loquats', 'Jackfruits', 'Rambutans', 'Durians', 'Longans', 'Starfruits']
+const SWATCHES = ['#5b4fe8','#22d3ee','#60a5fa','#4ade80','#fbbf24','#fb923c','#f87171','#f472b6']
 
 // Primary attempt: +3 (author+title), +2 (title only), ✗ (wrong → opens passover)
 function PrimaryCell({ value, onChange }) {
@@ -51,7 +52,7 @@ const PAGE_SIZE = 4
 const TOTAL_PAGES = Math.ceil(ROUNDS.length / PAGE_SIZE)
 
 export function Scoresheet({ user, saveGame, scores }) {
-  const { cells, teamA, teamB, page, updateCell, setTeamA, setTeamB, setPage, resetCells } = scores
+  const { cells, teamA, teamB, colorA, colorB, page, updateCell, setTeamA, setTeamB, setColorA, setColorB, setPage, resetCells } = scores
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [saveToast, setSaveToast] = useState(false)
 
@@ -129,7 +130,7 @@ export function Scoresheet({ user, saveGame, scores }) {
             />
             <span className="text-muted font-medium">{round.label}</span>
             {/* Badge showing which team is primary this round */}
-            <span className={`text-[9px] font-bold px-1 py-0.5 rounded leading-none ${isPrimaryA ? 'text-accent bg-accent/15' : 'text-warn bg-warn/15'}`}>
+            <span className="text-[9px] font-bold px-1 py-0.5 rounded leading-none" style={{ color: isPrimaryA ? colorA : colorB, backgroundColor: (isPrimaryA ? colorA : colorB) + '26' }}>
               {isPrimaryA ? 'A' : 'B'}
             </span>
           </div>
@@ -138,7 +139,7 @@ export function Scoresheet({ user, saveGame, scores }) {
         {/* Team A cell */}
         <td
           className="py-1 px-0.5 transition-colors rounded-sm"
-          style={aHighlight ? { backgroundColor: 'rgba(91,79,232,0.14)' } : undefined}
+          style={aHighlight ? { backgroundColor: colorA + '24' } : undefined}
         >
           {isPrimaryA ? (
             <PrimaryCell
@@ -158,7 +159,7 @@ export function Scoresheet({ user, saveGame, scores }) {
         {/* Team B cell */}
         <td
           className="py-1 px-0.5 transition-colors rounded-sm"
-          style={bHighlight ? { backgroundColor: 'rgba(251,191,36,0.14)' } : undefined}
+          style={bHighlight ? { backgroundColor: colorB + '24' } : undefined}
         >
           {!isPrimaryA ? (
             <PrimaryCell
@@ -195,6 +196,11 @@ export function Scoresheet({ user, saveGame, scores }) {
             />
             <button onClick={() => setTeamA(randomName(ANIMALS))} className="btn btn-ghost text-xs px-2" title="Random name">↺</button>
           </div>
+          <div className="flex gap-1.5 mt-1">
+            {SWATCHES.map(c => (
+              <button type="button" key={c} onClick={() => setColorA(c)} style={{ width:16, height:16, borderRadius:'50%', backgroundColor:c, outline: colorA===c ? `2px solid ${c}` : 'none', outlineOffset:2, border:'none', cursor:'pointer', flexShrink:0 }} />
+            ))}
+          </div>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted uppercase tracking-wide">Team B</label>
@@ -207,18 +213,23 @@ export function Scoresheet({ user, saveGame, scores }) {
             />
             <button onClick={() => setTeamB(randomName(FRUITS))} className="btn btn-ghost text-xs px-2" title="Random name">↺</button>
           </div>
+          <div className="flex gap-1.5 mt-1">
+            {SWATCHES.map(c => (
+              <button type="button" key={c} onClick={() => setColorB(c)} style={{ width:16, height:16, borderRadius:'50%', backgroundColor:c, outline: colorB===c ? `2px solid ${c}` : 'none', outlineOffset:2, border:'none', cursor:'pointer', flexShrink:0 }} />
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Score totals */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="card p-4 text-center">
+        <div className="card p-4 text-center" style={{ borderColor: colorA + '60' }}>
           <div className="text-xs text-muted mb-1 truncate">{teamA}</div>
-          <div className="text-4xl font-display font-bold text-accent">{scoreA}</div>
+          <div className="text-4xl font-display font-bold" style={{ color: colorA }}>{scoreA}</div>
         </div>
-        <div className="card p-4 text-center">
+        <div className="card p-4 text-center" style={{ borderColor: colorB + '60' }}>
           <div className="text-xs text-muted mb-1 truncate">{teamB}</div>
-          <div className="text-4xl font-display font-bold text-warn">{scoreB}</div>
+          <div className="text-4xl font-display font-bold" style={{ color: colorB }}>{scoreB}</div>
         </div>
       </div>
 
@@ -241,8 +252,8 @@ export function Scoresheet({ user, saveGame, scores }) {
           <thead>
             <tr className="border-b border-subtle">
               <th className="text-left py-2 pr-2 text-muted font-medium text-xs">Round</th>
-              <th className="py-2 text-accent text-xs font-medium truncate">{teamA}</th>
-              <th className="py-2 text-warn text-xs font-medium truncate">{teamB}</th>
+              <th className="py-2 text-xs font-medium truncate" style={{ color: colorA }}>{teamA}</th>
+              <th className="py-2 text-xs font-medium truncate" style={{ color: colorB }}>{teamB}</th>
             </tr>
           </thead>
           <tbody>

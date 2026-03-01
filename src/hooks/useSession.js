@@ -31,6 +31,8 @@ export function useSession(uid) {
   const [cells, setCells] = useState(initCells)
   const [teamA, setTeamAState] = useState('Team A')
   const [teamB, setTeamBState] = useState('Team B')
+  const [colorA, setColorAState] = useState('#5b4fe8')
+  const [colorB, setColorBState] = useState('#fbbf24')
   const [page, setPageState] = useState(0)
 
   // ── Internal refs ─────────────────────────────────────────────
@@ -94,6 +96,8 @@ export function useSession(uid) {
       if (data.cells) setCells(data.cells)
       if (data.teamA !== undefined) setTeamAState(data.teamA)
       if (data.teamB !== undefined) setTeamBState(data.teamB)
+      if (data.colorA !== undefined) setColorAState(data.colorA)
+      if (data.colorB !== undefined) setColorBState(data.colorB)
       if (data.page !== undefined) setPageState(data.page)
 
       // ── Sound sync ────────────────────────────────────────────
@@ -282,6 +286,16 @@ export function useSession(uid) {
     if (sessionRef) setDoc(sessionRef, { teamB: name }, { merge: true })
   }, [uid])
 
+  const setColorA = useCallback((color) => {
+    setColorAState(color)
+    if (sessionRef) setDoc(sessionRef, { colorA: color }, { merge: true })
+  }, [uid])
+
+  const setColorB = useCallback((color) => {
+    setColorBState(color)
+    if (sessionRef) setDoc(sessionRef, { colorB: color }, { merge: true })
+  }, [uid])
+
   const setPage = useCallback((pageOrFn) => {
     setPageState(prev => {
       const next = typeof pageOrFn === 'function' ? pageOrFn(prev) : pageOrFn
@@ -316,8 +330,8 @@ export function useSession(uid) {
     start, pause, resume, reset, broadcastSound, remoteSoundEvent,
   }
   const scores = {
-    cells, teamA, teamB, page,
-    updateCell, setTeamA, setTeamB, setPage, resetCells, restoreCells,
+    cells, teamA, teamB, colorA, colorB, page,
+    updateCell, setTeamA, setTeamB, setColorA, setColorB, setPage, resetCells, restoreCells,
   }
 
   return { timer, scores }
