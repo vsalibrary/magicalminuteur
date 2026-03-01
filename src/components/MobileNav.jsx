@@ -33,14 +33,20 @@ const SOUNDS_TAB = {
 export function MobileNav({ activeTab, setActiveTab }) {
   const tabs = [...BASE_TABS, SOUNDS_TAB]
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-30 flex border-t border-white/10 bg-[#0c0c12]/95 backdrop-blur-md md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-30 flex backdrop-blur-md md:hidden mobile-nav"
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        borderTop: '1px solid var(--color-border)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
+    >
       {tabs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => setActiveTab(tab.id)}
-          className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors ${
-            activeTab === tab.id ? 'text-accent' : 'text-white/40 hover:text-white/70'
-          }`}
+          className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs transition-colors${activeTab === tab.id ? ' nav-tab-active' : ''}`}
+          style={{ color: activeTab === tab.id ? 'var(--color-text)' : 'var(--color-muted)' }}
         >
           {tab.icon}
           <span>{tab.label}</span>
