@@ -22,7 +22,13 @@
       "Bash(node:*)",
       "Bash(git:*)",
       "Bash(gh auth:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" push:*)",
+      "Bash(cmdkey:*)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\" credential:*)",
+      "Bash(\"C:\\\\Program Files\\\\Git\\\\bin\\\\git.exe\":*)",
+      "Bash(du:*)",
+      "Bash(magick:*)"
     ]
   }
 }
