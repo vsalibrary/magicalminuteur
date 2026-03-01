@@ -17,7 +17,7 @@ export default function App() {
   const { user, signIn, signOut } = useAuth()
   const { timer, scores } = useSession(user?.uid || null)
   const audio = useAudio()
-  const { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, deleteGame, deleteAllGames, uploading, uploadProgress } =
+  const { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, deleteGame, deleteAllGames, uploading, uploadProgress, uploadError } =
     useUserData(user?.uid || null)
   const { theme, toggleTheme } = useTheme()
 
@@ -171,6 +171,7 @@ export default function App() {
           settings={settings}
           uploading={uploading}
           uploadProgress={uploadProgress}
+          uploadError={uploadError}
           uploadSound={uploadSound}
           deleteSound={deleteSound}
           assignSound={assignSound}

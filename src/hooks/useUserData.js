@@ -6,6 +6,22 @@ import { db } from '../firebase/config'
 import { supabase } from '../supabase/client'
 
 const BUCKET = 'sounds'
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+
+async function validateAudioFile(file) {
+  if (!file.type.startsWith('audio/')) return 'Only audio files are allowed.'
+  if (file.size > MAX_FILE_SIZE) return 'File must be under 10MB.'
+  const buf = await file.slice(0, 12).arrayBuffer()
+  const b = new Uint8Array(buf)
+  const isMP3  = (b[0] === 0xFF && (b[1] & 0xE0) === 0xE0) || (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33)
+  const isWAV  = b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46
+  const isOGG  = b[0] === 0x4F && b[1] === 0x67 && b[2] === 0x67 && b[3] === 0x53
+  const isFLAC = b[0] === 0x66 && b[1] === 0x4C && b[2] === 0x61 && b[3] === 0x43
+  const isM4A  = b[4] === 0x66 && b[5] === 0x74 && b[6] === 0x79 && b[7] === 0x70
+  const isAIFF = b[0] === 0x46 && b[1] === 0x4F && b[2] === 0x52 && b[3] === 0x4D
+  if (!isMP3 && !isWAV && !isOGG && !isFLAC && !isM4A && !isAIFF) return 'File does not appear to be a valid audio file.'
+  return null
+}
 
 const DEFAULT_SETTINGS = {
   correctSoundId: 'default',
@@ -34,6 +50,7 @@ export function useUserData(uid) {
   const [games, setGames] = useState([])
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadError, setUploadError] = useState(null)
 
   useEffect(() => {
     if (!uid) {
@@ -68,6 +85,9 @@ export function useUserData(uid) {
   const uploadSound = useCallback(async (file) => {
     if (!uid || !supabase) return
     if (sounds.length >= 4) return
+    setUploadError(null)
+    const validationError = await validateAudioFile(file)
+    if (validationError) { setUploadError(validationError); return }
     setUploading(true)
     setUploadProgress(0)
 
@@ -140,5 +160,5 @@ export function useUserData(uid) {
     await Promise.all(gamesList.map(g => deleteDoc(doc(db, 'users', uid, 'games', g.id))))
   }, [uid])
 
-  return { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, deleteGame, deleteAllGames, uploading, uploadProgress }
+  return { settings, sounds, games, uploadSound, deleteSound, assignSound, saveGame, deleteGame, deleteAllGames, uploading, uploadProgress, uploadError }
 }

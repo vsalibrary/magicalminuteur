@@ -8,7 +8,7 @@ function PlayingSoundVisualizer({ analyser }) {
   return bars
 }
 
-export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress, uploadSound, deleteSound, assignSound, audio }) {
+export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress, uploadError, uploadSound, deleteSound, assignSound, audio }) {
   const fileInputRef = useRef(null)
   const [playingId, setPlayingId] = useState(null)
   const [analyserNode, setAnalyserNode] = useState(null)
@@ -102,6 +102,11 @@ export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress
           onChange={handleFileChange}
         />
       </div>
+
+      {/* Upload error */}
+      {uploadError && (
+        <p className="text-xs text-danger text-center">{uploadError}</p>
+      )}
 
       {/* Upload progress */}
       {uploading && (

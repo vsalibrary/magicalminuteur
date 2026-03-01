@@ -3,7 +3,7 @@ import { SoundLibrary } from './SoundLibrary'
 import { ScoreHistory } from './ScoreHistory'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 
-export function AdminPage({ user, sounds, settings, uploading, uploadProgress, uploadSound, deleteSound, assignSound, audio, games, onRestore, onClose, deleteGame, deleteAllGames }) {
+export function AdminPage({ user, sounds, settings, uploading, uploadProgress, uploadError, uploadSound, deleteSound, assignSound, audio, games, onRestore, onClose, deleteGame, deleteAllGames }) {
   const [restoreTarget, setRestoreTarget] = useState(null)
   const [deleteAllConfirm, setDeleteAllConfirm] = useState(false)
 
@@ -28,6 +28,7 @@ export function AdminPage({ user, sounds, settings, uploading, uploadProgress, u
               settings={settings}
               uploading={uploading}
               uploadProgress={uploadProgress}
+              uploadError={uploadError}
               uploadSound={uploadSound}
               deleteSound={deleteSound}
               assignSound={assignSound}
