@@ -7,16 +7,30 @@ const ANIMALS = ['Eagles', 'Tigers', 'Pandas', 'Lions', 'Foxes', 'Wolves', 'Hawk
 const FRUITS = ['Mangoes', 'Kiwis', 'Lychees', 'Papayas', 'Loquats', 'Jackfruits', 'Rambutans', 'Durians', 'Longans', 'Starfruits']
 const SWATCHES = ['#5b4fe8','#22d3ee','#60a5fa','#4ade80','#fbbf24','#fb923c','#f87171','#f472b6']
 
+function ScoreFlash({ value, x, y, color }) {
+  return (
+    <div style={{
+      position: 'fixed', left: x, top: y, zIndex: 1000,
+      pointerEvents: 'none', fontWeight: 'bold', fontSize: '1.4rem',
+      color: color || '#4ade80',
+      textShadow: '0 2px 6px rgba(0,0,0,0.6)',
+      animation: 'score-fly-up 0.7s ease-out forwards',
+    }}>
+      +{value}
+    </div>
+  )
+}
+
 // Primary attempt: +3 (author+title), +2 (title only), ✗ (wrong → opens passover)
-function PrimaryCell({ value, onChange }) {
+function PrimaryCell({ value, onChange, onScore }) {
   return (
     <div className="flex gap-0.5 justify-center">
       <button
-        onClick={() => onChange(value === 3 ? null : 3)}
+        onClick={(e) => { const v = value === 3 ? null : 3; onChange(v); if (v) onScore?.(v, e) }}
         className={`score-btn ${value === 3 ? 'score-btn-active' : ''}`}
       >+3</button>
       <button
-        onClick={() => onChange(value === 2 ? null : 2)}
+        onClick={(e) => { const v = value === 2 ? null : 2; onChange(v); if (v) onScore?.(v, e) }}
         className={`score-btn ${value === 2 ? 'score-btn-active' : ''}`}
       >+2</button>
       <button
@@ -29,13 +43,13 @@ function PrimaryCell({ value, onChange }) {
 
 // Passover: only unlocked when primary team got it wrong.
 // team: 'a'|'b' — which team is RECEIVING the passover points (styled in their colour).
-function PassoverCell({ value, enabled, onChange, team }) {
+function PassoverCell({ value, enabled, onChange, team, onScore }) {
   const activeClass = team === 'a' ? 'score-btn-active' : 'score-btn-warn'
   const locked = !enabled && value === null
   return (
     <div className={`flex gap-0.5 justify-center ${locked ? 'opacity-20' : ''}`}>
       <button
-        onClick={() => enabled ? onChange(value === 2 ? null : 2) : undefined}
+        onClick={(e) => { if (!enabled) return; const v = value === 2 ? null : 2; onChange(v); if (v) onScore?.(v, e) }}
         disabled={!enabled}
         className={`score-btn ${value === 2 ? activeClass : ''} ${!enabled ? 'cursor-default' : ''}`}
       >+2</button>
@@ -51,10 +65,18 @@ function PassoverCell({ value, enabled, onChange, team }) {
 const PAGE_SIZE = 4
 const TOTAL_PAGES = Math.ceil(ROUNDS.length / PAGE_SIZE)
 
-export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
+export function Scoresheet({ user, saveGame, scores, onThreePoints, onFinishGame }) {
   const { cells, teamA, teamB, colorA, colorB, page, updateCell, setTeamA, setTeamB, setColorA, setColorB, setPage, resetCells } = scores
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [saveToast, setSaveToast] = useState(false)
+  const [flashes, setFlashes] = useState([])
+
+  const addFlash = (value, event, color) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    const id = Date.now() + Math.random()
+    setFlashes(prev => [...prev, { id, value, x: rect.left + rect.width / 2, y: rect.top, color }])
+    setTimeout(() => setFlashes(prev => prev.filter(f => f.id !== id)), 700)
+  }
 
   const { scoreA, scoreB } = totalScores(cells)
 
@@ -145,6 +167,7 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
             <PrimaryCell
               value={primary}
               onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.() }}
+              onScore={(v, e) => addFlash(v, e, colorA)}
             />
           ) : (
             <PassoverCell
@@ -152,6 +175,7 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
               enabled={passoverAvailable}
               onChange={v => updateCell(round.id, 'passover', v)}
               team="a"
+              onScore={(v, e) => addFlash(v, e, colorA)}
             />
           )}
         </td>
@@ -165,6 +189,7 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
             <PrimaryCell
               value={primary}
               onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.() }}
+              onScore={(v, e) => addFlash(v, e, colorB)}
             />
           ) : (
             <PassoverCell
@@ -172,6 +197,7 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
               enabled={passoverAvailable}
               onChange={v => updateCell(round.id, 'passover', v)}
               team="b"
+              onScore={(v, e) => addFlash(v, e, colorB)}
             />
           )}
         </td>
@@ -280,7 +306,7 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3 items-center justify-center">
+      <div className="flex gap-3 items-center justify-center flex-wrap">
         <RippleButton className="btn btn-ghost text-sm" onClick={() => setShowResetConfirm(true)}>
           Reset Scores
         </RippleButton>
@@ -292,6 +318,9 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
             </RippleButton>
           </div>
         )}
+        <RippleButton className="btn btn-ghost text-sm" onClick={onFinishGame}>
+          🏆 Finish Game
+        </RippleButton>
       </div>
 
       {showResetConfirm && (
@@ -301,6 +330,10 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints }) {
           onCancel={() => setShowResetConfirm(false)}
         />
       )}
+
+      {flashes.map(f => (
+        <ScoreFlash key={f.id} value={f.value} x={f.x} y={f.y} color={f.color} />
+      ))}
     </div>
   )
 }

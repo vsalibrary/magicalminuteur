@@ -1,9 +1,81 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useState } from 'react'
 
 let sharedCtx = null
 let sharedGain = null
 let sharedVolume = 0.8
 let currentCustomAudio = null
+
+// ── Ambient sound state (module-level, shared across hook instances) ──────────
+let ambientGain = null
+let ambientNodes = []
+let ambientIsRunning = false
+const AMBIENT_TARGET = 0.10  // base gain when running
+
+function duckAmbient(durationSecs = 2) {
+  if (!ambientGain || !ambientIsRunning || !sharedCtx) return
+  const t = sharedCtx.currentTime
+  ambientGain.gain.cancelScheduledValues(t)
+  ambientGain.gain.setTargetAtTime(0.015, t, 0.06)           // quick duck
+  ambientGain.gain.setTargetAtTime(AMBIENT_TARGET, t + durationSecs, 0.6) // slow recovery
+}
+
+function startAmbientNodes(ctx) {
+  if (ambientIsRunning) return
+  if (!ambientGain) {
+    ambientGain = ctx.createGain()
+    ambientGain.gain.value = 0
+    ambientGain.connect(ctx.destination)
+  }
+  ambientNodes.forEach(n => { try { n.stop?.() } catch {} })
+  ambientNodes = []
+
+  // Warm pad: root A2 (110 Hz) + subtle detune + fifth + octave
+  const voices = [
+    { freq: 110.0, gain: 0.30 },
+    { freq: 110.5, gain: 0.18 },
+    { freq: 165.0, gain: 0.20 },
+    { freq: 220.0, gain: 0.12 },
+  ]
+  voices.forEach(v => {
+    const osc = ctx.createOscillator()
+    const g = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.value = v.freq
+    g.gain.value = v.gain
+    osc.connect(g)
+    g.connect(ambientGain)
+    osc.start()
+    ambientNodes.push(osc)
+  })
+
+  // Slow tremolo LFO (±0.012 gain, 0.08 Hz)
+  const lfo = ctx.createOscillator()
+  const lfoDepth = ctx.createGain()
+  lfo.frequency.value = 0.08
+  lfoDepth.gain.value = 0.012
+  lfo.connect(lfoDepth)
+  lfoDepth.connect(ambientGain.gain)
+  lfo.start()
+  ambientNodes.push(lfo)
+
+  const t = ctx.currentTime
+  ambientGain.gain.cancelScheduledValues(t)
+  ambientGain.gain.setValueAtTime(0, t)
+  ambientGain.gain.linearRampToValueAtTime(AMBIENT_TARGET, t + 2) // 2s fade in
+  ambientIsRunning = true
+}
+
+function stopAmbientNodes(ctx) {
+  if (!ambientGain) { ambientIsRunning = false; return }
+  const t = ctx.currentTime
+  ambientGain.gain.cancelScheduledValues(t)
+  ambientGain.gain.setValueAtTime(ambientGain.gain.value, t)
+  ambientGain.gain.linearRampToValueAtTime(0, t + 0.8) // 0.8s fade out
+  const toStop = [...ambientNodes]
+  ambientNodes = []
+  ambientIsRunning = false
+  setTimeout(() => toStop.forEach(n => { try { n.stop?.() } catch {} }), 900)
+}
 
 // Preload default sounds so they play instantly on first press
 const PRELOAD_URLS = ['/sounds/correct.mp3', '/sounds/incorrect.mp3', '/sounds/timesup.mp3',
@@ -20,6 +92,7 @@ function ensurePreloaded() {
 }
 
 function playFile(url, fallback) {
+  duckAmbient(2.5)
   try {
     if (currentCustomAudio) {
       currentCustomAudio.pause()
@@ -113,6 +186,7 @@ function getCtx() {
 
 export function useAudio() {
   const volumeRef = useRef(0.8)
+  const [ambientOn, setAmbientOn] = useState(false)
   // Kick off preloading on first render (requires no user gesture for audio loading, only for play)
   ensurePreloaded()
 
@@ -129,6 +203,7 @@ export function useAudio() {
   const playTimerEnd = useCallback((url) => { playFile(url || '/sounds/timesup.mp3', playTimerEndSynth) }, [])
 
   const playFiveSecond = useCallback(() => {
+    duckAmbient(1.5)
     const { ctx, gain } = getCtx()
     const t = ctx.currentTime
     const osc = ctx.createOscillator()
@@ -168,6 +243,7 @@ export function useAudio() {
 
   // Simple playback without Web Audio — for soundboard buttons (fast, iOS-compatible)
   const playSimple = useCallback((url) => {
+    duckAmbient(2.5)
     if (currentCustomAudio) {
       currentCustomAudio.pause()
       currentCustomAudio.currentTime = 0
@@ -192,6 +268,7 @@ export function useAudio() {
   }, [])
 
   const playCustom = useCallback((url) => {
+    duckAmbient(3)
     if (currentCustomAudio) {
       currentCustomAudio.pause()
       currentCustomAudio.currentTime = 0
@@ -227,5 +304,17 @@ export function useAudio() {
     }
   }, [])
 
-  return { volumeRef, setVolume, playCorrect, playIncorrect, playTimerEnd, playFiveSecond, playBeep, playCustom, playSimple, stopCustom }
+  const startAmbient = useCallback(() => {
+    const { ctx } = getCtx()
+    startAmbientNodes(ctx)
+    setAmbientOn(true)
+  }, [])
+
+  const stopAmbient = useCallback(() => {
+    const { ctx } = getCtx()
+    stopAmbientNodes(ctx)
+    setAmbientOn(false)
+  }, [])
+
+  return { volumeRef, setVolume, playCorrect, playIncorrect, playTimerEnd, playFiveSecond, playBeep, playCustom, playSimple, stopCustom, startAmbient, stopAmbient, ambientOn }
 }

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { SoundCard } from './SoundCard'
 import { ConfirmDialog } from './ui/ConfirmDialog'
 import { useVisualizer } from '../hooks/useVisualizer'
@@ -16,6 +16,68 @@ export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress
   const [deleteTarget, setDeleteTarget] = useState(null) // { id, storagePath }
   const stopRef = useRef(null)
   const rafRef = useRef(null)
+
+  // Microphone recording state
+  const [recordState, setRecordState] = useState(null) // null | 'requesting' | 'recording' | 'preview'
+  const [recordedBlob, setRecordedBlob] = useState(null)
+  const [recordingSeconds, setRecordingSeconds] = useState(0)
+  const [recordedName, setRecordedName] = useState('')
+  const [recordError, setRecordError] = useState(null)
+  const mediaRecorderRef = useRef(null)
+  const chunksRef = useRef([])
+  const recordTimerRef = useRef(null)
+
+  const previewUrl = useMemo(
+    () => (recordedBlob ? URL.createObjectURL(recordedBlob) : null),
+    [recordedBlob]
+  )
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
+
+  const startRecording = async () => {
+    setRecordState('requesting')
+    setRecordError(null)
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = recorder
+      chunksRef.current = []
+      setRecordingSeconds(0)
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) chunksRef.current.push(e.data) }
+      recorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop())
+        const blob = new Blob(chunksRef.current, { type: recorder.mimeType || 'audio/webm' })
+        setRecordedBlob(blob)
+        setRecordState('preview')
+        clearInterval(recordTimerRef.current)
+      }
+      recorder.start()
+      setRecordState('recording')
+      recordTimerRef.current = setInterval(() => setRecordingSeconds(s => s + 1), 1000)
+    } catch {
+      setRecordState(null)
+      setRecordError('Microphone access denied.')
+    }
+  }
+
+  const stopRecording = () => mediaRecorderRef.current?.stop()
+
+  const discardRecording = () => {
+    mediaRecorderRef.current?.stop()
+    setRecordState(null)
+    setRecordedBlob(null)
+    setRecordedName('')
+    clearInterval(recordTimerRef.current)
+  }
+
+  const saveRecording = async () => {
+    const name = (recordedName.trim() || 'recording')
+    const ext = recordedBlob.type.includes('ogg') ? 'ogg' : recordedBlob.type.includes('mp4') ? 'mp4' : 'webm'
+    const file = new File([recordedBlob], `${name}.${ext}`, { type: recordedBlob.type })
+    setRecordState(null)
+    setRecordedBlob(null)
+    setRecordedName('')
+    await uploadSound(file)
+  }
 
   const handlePlay = (sound) => {
     // Stop current
@@ -86,13 +148,23 @@ export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress
       <div className="flex items-center justify-between">
         <h3 className="section-label">Sound Library</h3>
         {user && (
-          <button
-            className="btn btn-primary text-sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? 'Uploading...' : '+ Upload'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="btn btn-ghost text-sm"
+              onClick={startRecording}
+              disabled={uploading || !!recordState}
+              title="Record from microphone"
+            >
+              🎤 Record
+            </button>
+            <button
+              className="btn btn-primary text-sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading || !!recordState}
+            >
+              {uploading ? 'Uploading...' : '+ Upload'}
+            </button>
+          </div>
         )}
         <input
           ref={fileInputRef}
@@ -102,6 +174,50 @@ export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress
           onChange={handleFileChange}
         />
       </div>
+
+      {/* Microphone recording UI */}
+      {recordState === 'requesting' && (
+        <div className="card p-4 text-center text-sm text-muted">Requesting microphone…</div>
+      )}
+      {recordState === 'recording' && (
+        <div className="card p-4 flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-3 h-3 rounded-full bg-danger animate-pulse" />
+            <span className="text-sm font-medium" style={{ color: 'var(--color-text)' }}>
+              Recording… {recordingSeconds}s
+            </span>
+            <div className="flex gap-2 ml-auto">
+              <button className="btn btn-danger text-sm px-3 py-1.5" onClick={stopRecording}>Stop</button>
+              <button className="btn btn-ghost text-sm px-3 py-1.5" onClick={discardRecording}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {recordState === 'preview' && (
+        <div className="card p-4 flex flex-col gap-3">
+          <p className="text-xs text-muted">Preview &amp; save your recording</p>
+          {previewUrl && <audio controls src={previewUrl} className="w-full" />}
+          <input
+            type="text"
+            value={recordedName}
+            onChange={e => setRecordedName(e.target.value)}
+            placeholder="Recording name…"
+            className="bg-subtle border border-subtle rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent"
+            style={{ color: 'var(--color-text)' }}
+          />
+          <div className="flex gap-2 justify-end">
+            <button className="btn btn-ghost text-sm px-3 py-1.5" onClick={discardRecording}>Discard</button>
+            <button
+              className="btn btn-primary text-sm px-3 py-1.5"
+              onClick={saveRecording}
+              disabled={uploading}
+            >
+              {uploading ? 'Saving…' : 'Save'}
+            </button>
+          </div>
+        </div>
+      )}
+      {recordError && <p className="text-xs text-danger text-center">{recordError}</p>}
 
       {/* Upload error */}
       {uploadError && (

@@ -15,13 +15,15 @@ function ConfettiPiece({ color, style }) {
   )
 }
 
-const BANANA_COUNT = 18
+const EMOJI_COUNT = 18
 
-export function Overlay({ fiveSecKey, timesUpKey, confettiKey, bananaKey }) {
+export function Overlay({ fiveSecKey, timesUpKey, confettiKey, bananaKey, pizzaKey, pizzaNegKey }) {
   const [fiveVisible, setFiveVisible] = useState(false)
   const [timesUpVisible, setTimesUpVisible] = useState(false)
   const [confettiVisible, setConfettiVisible] = useState(false)
   const [bananaVisible, setBananaVisible] = useState(false)
+  const [pizzaVisible, setPizzaVisible] = useState(false)
+  const [pizzaNegVisible, setPizzaNegVisible] = useState(false)
 
   useEffect(() => {
     if (fiveSecKey === 0) return
@@ -50,6 +52,20 @@ export function Overlay({ fiveSecKey, timesUpKey, confettiKey, bananaKey }) {
     const t = setTimeout(() => setBananaVisible(false), 2500)
     return () => clearTimeout(t)
   }, [bananaKey])
+
+  useEffect(() => {
+    if (pizzaKey === 0) return
+    setPizzaVisible(true)
+    const t = setTimeout(() => setPizzaVisible(false), 2500)
+    return () => clearTimeout(t)
+  }, [pizzaKey])
+
+  useEffect(() => {
+    if (pizzaNegKey === 0) return
+    setPizzaNegVisible(true)
+    const t = setTimeout(() => setPizzaNegVisible(false), 3000)
+    return () => clearTimeout(t)
+  }, [pizzaNegKey])
 
   return (
     <div className="fixed inset-0 z-40 pointer-events-none">
@@ -95,12 +111,12 @@ export function Overlay({ fiveSecKey, timesUpKey, confettiKey, bananaKey }) {
       {/* Banana rain */}
       {bananaVisible && (
         <div className="absolute inset-0 overflow-hidden">
-          {Array.from({ length: BANANA_COUNT }, (_, i) => (
+          {Array.from({ length: EMOJI_COUNT }, (_, i) => (
             <div
               key={i}
               className="absolute top-0 select-none"
               style={{
-                left: `${(i / BANANA_COUNT) * 100 + (i % 3) * 1.5}%`,
+                left: `${(i / EMOJI_COUNT) * 100 + (i % 3) * 1.5}%`,
                 fontSize: `${1.4 + (i % 4) * 0.3}rem`,
                 animationName: 'confetti-fall',
                 animationDuration: `${0.7 + (i % 6) * 0.18}s`,
@@ -110,6 +126,58 @@ export function Overlay({ fiveSecKey, timesUpKey, confettiKey, bananaKey }) {
               }}
             >
               🍌
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Pizza rain (win) */}
+      {pizzaVisible && (
+        <div className="absolute inset-0 overflow-hidden">
+          {Array.from({ length: EMOJI_COUNT }, (_, i) => (
+            <div
+              key={i}
+              className="absolute top-0 select-none"
+              style={{
+                left: `${(i / EMOJI_COUNT) * 100 + (i % 3) * 1.5}%`,
+                fontSize: `${1.4 + (i % 4) * 0.3}rem`,
+                animationName: 'confetti-fall',
+                animationDuration: `${0.7 + (i % 6) * 0.18}s`,
+                animationDelay: `${(i * 0.09) % 0.6}s`,
+                animationTimingFunction: 'linear',
+                animationFillMode: 'forwards',
+              }}
+            >
+              🍕
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Negative pizza rain (owe) */}
+      {pizzaNegVisible && (
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute inset-0 bg-red-500/10 flex items-center justify-center">
+            <span className="text-2xl font-bold text-white drop-shadow-lg" style={{ animation: 'none', position: 'relative', zIndex: 1 }}>
+              Negative Pizza 🍕
+            </span>
+          </div>
+          {Array.from({ length: EMOJI_COUNT }, (_, i) => (
+            <div
+              key={i}
+              className="absolute top-0 select-none"
+              style={{
+                left: `${(i / EMOJI_COUNT) * 100 + (i % 3) * 1.5}%`,
+                fontSize: `${1.4 + (i % 4) * 0.3}rem`,
+                animationName: 'confetti-fall',
+                animationDuration: `${0.9 + (i % 6) * 0.2}s`,
+                animationDelay: `${(i * 0.1) % 0.7}s`,
+                animationTimingFunction: 'linear',
+                animationFillMode: 'forwards',
+                filter: 'grayscale(0.3)',
+              }}
+            >
+              🍕
             </div>
           ))}
         </div>

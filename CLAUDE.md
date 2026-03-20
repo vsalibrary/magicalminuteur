@@ -164,14 +164,14 @@ Score buttons auto-shrink on mobile (`max-width: 639px`) via CSS media query.
   always call the reset callback FIRST so `isActive:false` reaches Firestore before the sound write
 
 ## Known TODOs
-- icon-192.png and icon-512.png are placeholder dark squares — replace with proper icons for PWA install prompt
+- ~~icon-192.png and icon-512.png are placeholder dark squares~~ ✓ Done — regenerated from icon.svg via `sharp` (devDependency).
 - ~~**Projector/Audience View**~~ ✓ Done — `/display` route, `src/components/DisplayView.jsx`, `⛶` button in Header opens in new tab.
-- **Timer urgency animation**: timer ring/colour shifts green → amber → red as time runs low; subtle pulse in last 5 seconds.
-- **Haptic feedback**: `navigator.vibrate()` on mobile — short tap on correct/incorrect, long buzz on time's up.
-- **QR code for cross-device join**: show a QR code that opens the session on another device without requiring manual sign-in to the same account.
-- **Score point animations**: when +2 or +3 is awarded, animate a flying score number up from the cell (mobile-game style).
-- **Per-team colour/identity**: teams pick a colour that tints their score column, confetti, and scoreboard side.
+- ~~**Timer urgency animation**~~ ✓ Done — `getRingColor()` in Timer.jsx + DisplayView.jsx; `timer-pulsing` CSS class applied when `isRunning && seconds <= 5`.
+- ~~**Haptic feedback**~~ ✓ Done — `navigator.vibrate?.([50])` on correct, `[50,40,50]` on incorrect, `[400,100,400]` on time's up.
+- ~~**QR code for cross-device join**~~ ✓ Done — `src/components/QRModal.jsx` using `qrcode` npm package; ▦ button in Header (desktop only).
+- ~~**Score point animations**~~ ✓ Done — `ScoreFlash` component in Scoresheet.jsx; fixed-position +2/+3 numbers fly up from clicked cell in team colour.
+- ~~**Per-team colour/identity**~~ ✓ Done
 - **Ambient background sound**: optional looping background music that auto-ducks when a sound effect fires; separate soundboard category.
-- **End-of-game summary + Finish Game button**: "Finish Game" button (alongside Save Game) triggers a full-screen results card showing winner, final scores, and highest-scoring round. Offers share/export. Then saves and resets.
-- **Microphone recording**: in Admin → Sound Library, allow user to record audio via microphone (MediaRecorder API), preview the recording, name it, then upload to Supabase and store alongside uploaded sounds. Appears on custom sounds page like any uploaded file.
-- **Cascading banana emojis**: celebratory banana rain effect (similar to confetti) triggered on some event.
+- ~~**End-of-game summary + Finish Game button**~~ ✓ Done — `src/components/EndGameSummary.jsx`; 🏆 Finish Game button in Scoresheet; SVG spinner prize wheel (banana/pizza/negative pizza outcomes trigger emoji rain).
+- ~~**Microphone recording**~~ ✓ Done — 🎤 Record button in SoundLibrary.jsx; MediaRecorder state machine (requesting→recording→preview→upload).
+- ~~**Cascading banana emojis**~~ ✓ Done

@@ -12,6 +12,8 @@ import { Soundboard } from './components/Soundboard'
 import { Scoresheet } from './components/Scoresheet'
 import { Overlay } from './components/Overlay'
 import { AdminPage } from './components/AdminPage'
+import { EndGameSummary } from './components/EndGameSummary'
+import { QRModal } from './components/QRModal'
 
 export default function App() {
   const { user, signIn, signOut } = useAuth()
@@ -26,7 +28,11 @@ export default function App() {
   const [timesUpKey, setTimesUpKey] = useState(0)
   const [confettiKey, setConfettiKey] = useState(0)
   const [bananaKey, setBananaKey] = useState(0)
+  const [pizzaKey, setPizzaKey] = useState(0)
+  const [pizzaNegKey, setPizzaNegKey] = useState(0)
   const [showAdmin, setShowAdmin] = useState(false)
+  const [showEndGame, setShowEndGame] = useState(false)
+  const [showQR, setShowQR] = useState(false)
 
   // Sync volume from user settings
   useEffect(() => {
@@ -61,6 +67,11 @@ export default function App() {
     if (url) audio.playSimple(url)
     else audio.stopCustom()
   }, [timer.remoteSoundEvent?.key])
+
+  useEffect(() => {
+    if (!timer.remoteBananaEvent) return
+    setBananaKey(k => k + 1)
+  }, [timer.remoteBananaEvent?.key])
 
   const handleCorrect = () => {
     setConfettiKey(k => k + 1)
@@ -128,7 +139,8 @@ export default function App() {
       user={user}
       saveGame={saveGame}
       scores={scores}
-      onThreePoints={() => setBananaKey(k => k + 1)}
+      onThreePoints={() => timer.broadcastBanana()}
+      onFinishGame={() => setShowEndGame(true)}
     />
   )
 
@@ -141,6 +153,7 @@ export default function App() {
         theme={theme}
         toggleTheme={toggleTheme}
         onAdmin={() => setShowAdmin(true)}
+        onQR={() => setShowQR(true)}
       />
 
       <main className="flex-1 max-w-[1400px] mx-auto w-full px-4 py-6 pb-24 md:pb-6">
@@ -166,6 +179,8 @@ export default function App() {
         timesUpKey={timesUpKey}
         confettiKey={confettiKey}
         bananaKey={bananaKey}
+        pizzaKey={pizzaKey}
+        pizzaNegKey={pizzaNegKey}
       />
 
       {showAdmin && (
@@ -187,6 +202,20 @@ export default function App() {
           deleteAllGames={deleteAllGames}
         />
       )}
+
+      {showEndGame && (
+        <EndGameSummary
+          scores={scores}
+          saveGame={saveGame}
+          user={user}
+          onClose={() => setShowEndGame(false)}
+          onBananaRain={() => setBananaKey(k => k + 1)}
+          onPizzaRain={() => setPizzaKey(k => k + 1)}
+          onNegativePizzaRain={() => setPizzaNegKey(k => k + 1)}
+        />
+      )}
+
+      {showQR && <QRModal onClose={() => setShowQR(false)} />}
     </div>
   )
 }
