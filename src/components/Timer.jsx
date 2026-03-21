@@ -5,10 +5,11 @@ const R = 95
 const CIRC = 2 * Math.PI * R
 
 function getRingColor(progress) {
+  const arcade = document.documentElement.classList.contains('arcade')
   const remaining = 100 - (progress || 0)
-  if (remaining > 30) return '#4ade80'
-  if (remaining > 15) return '#fbbf24'
-  return '#f87171'
+  if (remaining > 30) return arcade ? '#57c8f2' : '#4ade80'
+  if (remaining > 15) return arcade ? '#ffa94d' : '#fbbf24'
+  return arcade ? '#f055a0' : '#f87171'
 }
 
 export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }) {
