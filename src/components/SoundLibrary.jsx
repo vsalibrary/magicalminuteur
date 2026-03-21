@@ -254,6 +254,7 @@ export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress
             settings?.correctSoundId   === sound.id && 'correct',
             settings?.incorrectSoundId === sound.id && 'incorrect',
             settings?.timesUpSoundId   === sound.id && 'timesup',
+            settings?.ambientSoundId   === sound.id && 'ambient',
             settings?.soundboardSlot0  === sound.id && 'slot0',
             settings?.soundboardSlot1  === sound.id && 'slot1',
             settings?.soundboardSlot2  === sound.id && 'slot2',

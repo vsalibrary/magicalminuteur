@@ -10,6 +10,7 @@ const ASSIGNMENT_SLOTS = [
   { key: 'correct',   symbol: '✓', label: "Correct",      color: '#34d399', glow: 'rgba(52,211,153,0.4)' },
   { key: 'incorrect', symbol: '✗', label: "Incorrect",    color: '#f87171', glow: 'rgba(248,113,113,0.4)' },
   { key: 'timesup',   symbol: '⏱', label: "Time's Up",   color: '#fb923c', glow: 'rgba(251,146,60,0.4)' },
+  { key: 'ambient',   symbol: '🎵', label: "Ambient",     color: '#a78bfa', glow: 'rgba(167,139,250,0.4)' },
 ]
 
 export function SoundCard({

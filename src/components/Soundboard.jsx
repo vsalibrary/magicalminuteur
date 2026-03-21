@@ -70,7 +70,17 @@ export function Soundboard({ audio, sounds, settings, user, onPlay, onStop }) {
       <div className="border-t border-subtle pt-2 mt-1">
         <button
           className={`btn w-full text-sm ${audio?.ambientOn ? 'btn-primary' : 'btn-ghost'}`}
-          onClick={() => audio?.ambientOn ? audio.stopAmbient() : audio.startAmbient()}
+          onClick={() => {
+            if (audio?.ambientOn) {
+              audio.stopAmbient()
+            } else {
+              const ambientId = settings?.ambientSoundId
+              const ambientUrl = ambientId && ambientId !== 'default'
+                ? sounds?.find(s => s.id === ambientId)?.url
+                : null
+              audio?.startAmbient(ambientUrl)
+            }
+          }}
           title={audio?.ambientOn ? 'Stop ambient sound' : 'Start ambient sound'}
         >
           🎵 Ambient

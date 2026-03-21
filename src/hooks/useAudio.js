@@ -6,52 +6,100 @@ let sharedVolume = 0.8
 let currentCustomAudio = null
 
 // ── Ambient sound state (module-level, shared across hook instances) ──────────
-let ambientAudio = null
+let ambientAudio = null       // set when using a loaded file
+let ambientGain = null        // set when using generated oscillators
+let ambientOscNodes = []
 let ambientIsRunning = false
 let ambientFadeTimer = null
 const AMBIENT_TARGET = 0.10
 
 function duckAmbient(durationSecs = 2) {
-  if (!ambientAudio || !ambientIsRunning) return
-  ambientAudio.volume = 0.015
-  clearTimeout(ambientFadeTimer)
-  ambientFadeTimer = setTimeout(() => {
-    if (ambientAudio && ambientIsRunning) ambientAudio.volume = AMBIENT_TARGET
-  }, durationSecs * 1000)
+  if (!ambientIsRunning) return
+  if (ambientAudio) {
+    ambientAudio.volume = 0.015
+    clearTimeout(ambientFadeTimer)
+    ambientFadeTimer = setTimeout(() => {
+      if (ambientAudio && ambientIsRunning) ambientAudio.volume = AMBIENT_TARGET
+    }, durationSecs * 1000)
+  } else if (ambientGain && sharedCtx) {
+    const t = sharedCtx.currentTime
+    ambientGain.gain.cancelScheduledValues(t)
+    ambientGain.gain.setTargetAtTime(0.015, t, 0.06)
+    ambientGain.gain.setTargetAtTime(AMBIENT_TARGET, t + durationSecs, 0.6)
+  }
 }
 
-function startAmbientNodes() {
+function startAmbientNodes(url, ctx) {
   if (ambientIsRunning) return
-  if (!ambientAudio) {
-    ambientAudio = new Audio('/sounds/ambient.mp3')
-    ambientAudio.loop = true
+  if (url) {
+    // Load from uploaded sound file
+    if (!ambientAudio || ambientAudio._ambientUrl !== url) {
+      if (ambientAudio) { ambientAudio.pause(); ambientAudio.src = '' }
+      ambientAudio = new Audio(url)
+      ambientAudio._ambientUrl = url
+      ambientAudio.loop = true
+    }
+    ambientAudio.volume = 0
+    ambientAudio.play().catch(() => {})
+    let vol = 0
+    const step = AMBIENT_TARGET / 20
+    const fadeIn = setInterval(() => {
+      vol = Math.min(AMBIENT_TARGET, vol + step)
+      if (ambientAudio) ambientAudio.volume = vol
+      if (vol >= AMBIENT_TARGET) clearInterval(fadeIn)
+    }, 100)
+  } else {
+    // Fall back to generated warm pad (oscillators)
+    if (!ambientGain) {
+      ambientGain = ctx.createGain()
+      ambientGain.gain.value = 0
+      ambientGain.connect(ctx.destination)
+    }
+    ambientOscNodes.forEach(n => { try { n.stop?.() } catch {} })
+    ambientOscNodes = []
+    const voices = [
+      { freq: 110.0, gain: 0.30 }, { freq: 110.5, gain: 0.18 },
+      { freq: 165.0, gain: 0.20 }, { freq: 220.0, gain: 0.12 },
+    ]
+    voices.forEach(v => {
+      const osc = ctx.createOscillator()
+      const g = ctx.createGain()
+      osc.type = 'sine'; osc.frequency.value = v.freq; g.gain.value = v.gain
+      osc.connect(g); g.connect(ambientGain); osc.start()
+      ambientOscNodes.push(osc)
+    })
+    const lfo = ctx.createOscillator()
+    const lfoDepth = ctx.createGain()
+    lfo.frequency.value = 0.08; lfoDepth.gain.value = 0.012
+    lfo.connect(lfoDepth); lfoDepth.connect(ambientGain.gain); lfo.start()
+    ambientOscNodes.push(lfo)
+    const t = ctx.currentTime
+    ambientGain.gain.cancelScheduledValues(t)
+    ambientGain.gain.setValueAtTime(0, t)
+    ambientGain.gain.linearRampToValueAtTime(AMBIENT_TARGET, t + 2)
   }
-  ambientAudio.volume = 0
-  ambientAudio.play().catch(() => {})
-  // Fade in over 2s (20 steps × 100ms)
-  let vol = 0
-  const step = AMBIENT_TARGET / 20
-  const fadeIn = setInterval(() => {
-    vol = Math.min(AMBIENT_TARGET, vol + step)
-    if (ambientAudio) ambientAudio.volume = vol
-    if (vol >= AMBIENT_TARGET) clearInterval(fadeIn)
-  }, 100)
   ambientIsRunning = true
 }
 
-function stopAmbientNodes() {
-  if (!ambientAudio) { ambientIsRunning = false; return }
+function stopAmbientNodes(ctx) {
   ambientIsRunning = false
-  let vol = ambientAudio.volume
-  const step = vol / 8
-  const fadeOut = setInterval(() => {
-    vol = Math.max(0, vol - step)
-    if (ambientAudio) ambientAudio.volume = vol
-    if (vol <= 0) {
-      clearInterval(fadeOut)
-      if (ambientAudio) { ambientAudio.pause(); ambientAudio.currentTime = 0 }
-    }
-  }, 100)
+  if (ambientAudio) {
+    let vol = ambientAudio.volume
+    const step = Math.max(vol / 8, 0.005)
+    const fadeOut = setInterval(() => {
+      vol = Math.max(0, vol - step)
+      if (ambientAudio) ambientAudio.volume = vol
+      if (vol <= 0) { clearInterval(fadeOut); if (ambientAudio) { ambientAudio.pause(); ambientAudio.currentTime = 0 } }
+    }, 100)
+  } else if (ambientGain && ctx) {
+    const t = ctx.currentTime
+    ambientGain.gain.cancelScheduledValues(t)
+    ambientGain.gain.setValueAtTime(ambientGain.gain.value, t)
+    ambientGain.gain.linearRampToValueAtTime(0, t + 0.8)
+    const toStop = [...ambientOscNodes]
+    ambientOscNodes = []
+    setTimeout(() => toStop.forEach(n => { try { n.stop?.() } catch {} }), 900)
+  }
 }
 
 // Preload default sounds so they play instantly on first press
@@ -281,13 +329,15 @@ export function useAudio() {
     }
   }, [])
 
-  const startAmbient = useCallback(() => {
-    startAmbientNodes()
+  const startAmbient = useCallback((url) => {
+    const { ctx } = getCtx()
+    startAmbientNodes(url || null, ctx)
     setAmbientOn(true)
   }, [])
 
   const stopAmbient = useCallback(() => {
-    stopAmbientNodes()
+    const { ctx } = getCtx()
+    stopAmbientNodes(ctx)
     setAmbientOn(false)
   }, [])
 
