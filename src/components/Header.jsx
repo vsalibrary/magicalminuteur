@@ -21,18 +21,16 @@ export function Header({ user, signIn, signOut, theme, toggleTheme, onAdmin, onQ
         >
           {THEME_ICON[theme] || '☀'}
         </button>
-        {user && (
-          <a
-            href="/display"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-ghost text-sm px-3 py-2 hidden md:inline-flex"
-            title="Open projector view"
-            aria-label="Projector view"
-          >
-            ⛶
-          </a>
-        )}
+        <a
+          href="/display"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-ghost text-sm px-3 py-2 hidden md:inline-flex"
+          title="Open projector view"
+          aria-label="Projector view"
+        >
+          ⛶
+        </a>
         <button
           onClick={onQR}
           className="btn btn-ghost text-sm px-3 py-2 hidden md:inline-flex"
