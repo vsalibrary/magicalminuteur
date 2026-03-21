@@ -130,7 +130,7 @@ export default function App() {
       saveGame={saveGame}
       scores={scores}
       onThreePoints={() => timer.broadcastBanana()}
-      onFinishGame={() => setShowEndGame(true)}
+      onFinishGame={() => { setShowEndGame(true); timer.broadcastEndGame(true) }}
     />
   )
 
@@ -194,7 +194,7 @@ export default function App() {
           scores={scores}
           saveGame={saveGame}
           user={user}
-          onClose={() => setShowEndGame(false)}
+          onClose={() => { setShowEndGame(false); timer.broadcastEndGame(false) }}
           onBananaRain={() => {}}
           onPizzaRain={() => {}}
           onNegativePizzaRain={() => {}}
