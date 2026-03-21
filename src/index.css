@@ -306,6 +306,11 @@
 /* No scanlines — they clash with the colourful style */
 html.arcade::after { display: none; }
 
+/* Timer ring: Press Start 2P for the seconds number */
+.arcade svg text {
+  font-family: 'Press Start 2P', monospace !important;
+}
+
 /* ─── Mobile overrides ──────────────────────────────── */
 @media (max-width: 639px) {
   .score-btn {
