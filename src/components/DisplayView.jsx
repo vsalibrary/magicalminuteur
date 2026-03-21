@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSession'
 import { ROUNDS, totalScores } from '../utils/scores'
+import { SpinnerWheelDisplay, SEGMENTS } from './EndGameSummary'
 
 const DISPLAY_CYCLE = { light: 'dark', dark: 'arcade', arcade: 'light' }
 
@@ -68,49 +69,58 @@ export function DisplayView() {
   const winnerColor = scoreA > scoreB ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24')
 
   if (timer.endGameActive) {
+    const sp = timer.spinState
+    const spinLastResult = (sp && sp.resultIdx != null) ? SEGMENTS[sp.resultIdx] : null
+
     return (
       <div
-        className="fixed inset-0 flex flex-col items-center justify-center gap-8 select-none"
-        style={{ backgroundColor: 'var(--color-bg)' }}
+        className="fixed inset-0 flex flex-col items-center justify-center gap-8 select-none overflow-y-auto"
+        style={{ backgroundColor: 'var(--color-bg)', padding: '4vh 6vw' }}
       >
         {/* Controls */}
         <div className="absolute top-3 right-4 flex gap-2" style={{ zIndex: 10 }}>
           <button onClick={toggleTheme} className="btn btn-ghost text-xs px-2 py-1" title="Toggle theme">{themeIcon}</button>
         </div>
 
-        <div
-          className="font-semibold tracking-widest uppercase"
-          style={{ color: 'var(--color-muted)', fontSize: 'clamp(0.75rem, 2vw, 1.25rem)' }}
-        >
-          Game Over
+        {/* Winner */}
+        <div className="text-center">
+          {winner ? (
+            <>
+              <div style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}>🥇</div>
+              <div className="font-bold tracking-widest uppercase" style={{ color: winnerColor, fontSize: 'clamp(2rem, 5vw, 4rem)', lineHeight: 1.1 }}>
+                {winner} wins!
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}>🤝</div>
+              <div className="font-bold tracking-widest uppercase" style={{ color: 'var(--color-text)', fontSize: 'clamp(2rem, 5vw, 4rem)', lineHeight: 1.1 }}>
+                It's a tie!
+              </div>
+            </>
+          )}
         </div>
 
-        {winner ? (
-          <div
-            className="font-bold tracking-widest uppercase text-center"
-            style={{ color: winnerColor, fontSize: 'clamp(2.5rem, 8vw, 7rem)', lineHeight: 1.1 }}
-          >
-            {winner}<br />wins!
+        {/* Scores */}
+        <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+          <div className="card p-5 text-center" style={{ borderColor: (scores.colorA || '#5b4fe8') + '60' }}>
+            <div className="text-xs text-muted mb-1 truncate">{scores.teamA}</div>
+            <div className="font-bold tabular-nums" style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>{scoreA}</div>
           </div>
-        ) : (
-          <div
-            className="font-bold tracking-widest uppercase"
-            style={{ color: 'var(--color-text)', fontSize: 'clamp(2.5rem, 8vw, 7rem)', lineHeight: 1.1 }}
-          >
-            Draw!
+          <div className="card p-5 text-center" style={{ borderColor: (scores.colorB || '#fbbf24') + '60' }}>
+            <div className="text-xs text-muted mb-1 truncate">{scores.teamB}</div>
+            <div className="font-bold tabular-nums" style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>{scoreB}</div>
           </div>
-        )}
+        </div>
 
-        <div className="flex gap-16 items-end">
-          <div className="flex flex-col items-center gap-2">
-            <span style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(0.8rem, 2vw, 1.5rem)', fontWeight: 600 }}>{scores.teamA}</span>
-            <span style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(3rem, 10vw, 8rem)', fontWeight: 700, lineHeight: 1 }}>{scoreA}</span>
-          </div>
-          <span style={{ color: 'var(--color-muted)', fontSize: 'clamp(1.5rem, 4vw, 3rem)', paddingBottom: '0.4em' }}>vs</span>
-          <div className="flex flex-col items-center gap-2">
-            <span style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(0.8rem, 2vw, 1.5rem)', fontWeight: 600 }}>{scores.teamB}</span>
-            <span style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(3rem, 10vw, 8rem)', fontWeight: 700, lineHeight: 1 }}>{scoreB}</span>
-          </div>
+        {/* Prize wheel */}
+        <div className="text-center">
+          <p className="section-label mb-4">Prize Wheel</p>
+          <SpinnerWheelDisplay
+            rotation={sp?.rotation}
+            spinning={sp?.spinning}
+            lastResult={sp?.spinning === false ? spinLastResult : null}
+          />
         </div>
       </div>
     )

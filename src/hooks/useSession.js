@@ -28,6 +28,7 @@ export function useSession(uid) {
   const [remoteSoundEvent, setRemoteSoundEvent] = useState(null)
   const [remoteBananaEvent, setRemoteBananaEvent] = useState(null)
   const [endGameActive, setEndGameActive] = useState(false)
+  const [spinState, setSpinState] = useState(null)
 
   // ── Score state ───────────────────────────────────────────────
   const [cells, setCells] = useState(initCells)
@@ -129,6 +130,7 @@ export function useSession(uid) {
       bananaSeededRef.current = true
 
       if (data.endGameActive !== undefined) setEndGameActive(!!data.endGameActive)
+      if (data.spinState !== undefined) setSpinState(data.spinState)
 
       setIsPaused(!!data.isPaused)
 
@@ -358,11 +360,17 @@ export function useSession(uid) {
     setDoc(sessionRef, { endGameActive: !!active }, { merge: true })
   }, [uid])
 
+  const broadcastSpinState = useCallback((state) => {
+    if (!sessionRef) return
+    setDoc(sessionRef, { spinState: state }, { merge: true })
+  }, [uid])
+
   const timer = {
     seconds, isRunning, isPaused, progress, justFiveSec, justFinished,
     start, pause, resume, reset, broadcastSound, remoteSoundEvent,
     broadcastBanana, remoteBananaEvent,
     broadcastEndGame, endGameActive,
+    broadcastSpinState, spinState,
   }
   const scores = {
     cells, teamA, teamB, colorA, colorB, page,

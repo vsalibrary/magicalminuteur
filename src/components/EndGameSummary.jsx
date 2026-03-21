@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { ROUNDS, totalScores } from '../utils/scores'
 
 // Wheel segments: outcome determines which emoji rain fires
-const SEGMENTS = [
+export const SEGMENTS = [
   { emoji: '🍌', label: 'Banana!',      outcome: 'banana',   color: '#fbbf24' },
   { emoji: '🍕', label: 'Pizza!',       outcome: 'pizza',    color: '#f97316' },
   { emoji: '🍌', label: 'Banana!',      outcome: 'banana',   color: '#fde68a' },
@@ -45,42 +45,14 @@ function emojiPos(i) {
   return polarToXY(CX, CY, (R + INNER) / 2, mid)
 }
 
-function SpinnerWheel({ onResult }) {
-  const [spinning, setSpinning] = useState(false)
-  const [rotation, setRotation] = useState(0)
-  const [lastResult, setLastResult] = useState(null)
-  const totalRotRef = useRef(0)
-
-  const spin = () => {
-    if (spinning) return
-    const targetIdx = Math.floor(Math.random() * N)
-    // The pointer is at top (0°). After rotating CW by angle A,
-    // the segment at top = floor(((360 - A % 360) % 360) / SEG_DEG)
-    // We want targetIdx, so: (360 - A % 360) % 360 = targetIdx * SEG_DEG + SEG_DEG/2
-    const targetAngle = targetIdx * SEG_DEG + SEG_DEG / 2
-    const partial = (360 - targetAngle % 360 + 360) % 360
-    const current = totalRotRef.current % 360
-    const diff = (partial - current + 360) % 360
-    const newTotal = totalRotRef.current + 5 * 360 + diff
-    totalRotRef.current = newTotal
-    setRotation(newTotal)
-    setSpinning(true)
-    setTimeout(() => {
-      setSpinning(false)
-      const seg = SEGMENTS[targetIdx]
-      setLastResult(seg)
-      onResult(seg.outcome)
-    }, 4200)
-  }
-
+export function SpinnerWheelDisplay({ rotation, spinning, lastResult }) {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="relative" style={{ width: 240, height: 240 }}>
-        {/* Wheel */}
         <svg
           width="240" height="240"
           style={{
-            transform: `rotate(${rotation}deg)`,
+            transform: `rotate(${rotation || 0}deg)`,
             transition: spinning ? 'transform 4s cubic-bezier(0.17, 0.67, 0.08, 1)' : 'none',
           }}
         >
@@ -99,12 +71,9 @@ function SpinnerWheel({ onResult }) {
               </text>
             </g>
           ))}
-          {/* Centre hub */}
           <circle cx={CX} cy={CY} r={INNER} fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="2" />
           <text x={CX} y={CY} textAnchor="middle" dominantBaseline="middle" fontSize="14">🎰</text>
         </svg>
-
-        {/* Pointer triangle at top */}
         <div style={{
           position: 'absolute', top: 0, left: '50%',
           transform: 'translateX(-50%)',
@@ -115,7 +84,45 @@ function SpinnerWheel({ onResult }) {
           zIndex: 10,
         }} />
       </div>
+      {lastResult && !spinning && (
+        <div className="text-xl font-bold animate-bounce" style={{ color: lastResult.color }}>
+          {lastResult.emoji} {lastResult.label}
+        </div>
+      )}
+    </div>
+  )
+}
 
+function SpinnerWheel({ onResult, onSpinStateChange }) {
+  const [spinning, setSpinning] = useState(false)
+  const [rotation, setRotation] = useState(0)
+  const [lastResult, setLastResult] = useState(null)
+  const totalRotRef = useRef(0)
+
+  const spin = () => {
+    if (spinning) return
+    const targetIdx = Math.floor(Math.random() * N)
+    const targetAngle = targetIdx * SEG_DEG + SEG_DEG / 2
+    const partial = (360 - targetAngle % 360 + 360) % 360
+    const current = totalRotRef.current % 360
+    const diff = (partial - current + 360) % 360
+    const newTotal = totalRotRef.current + 5 * 360 + diff
+    totalRotRef.current = newTotal
+    setRotation(newTotal)
+    setSpinning(true)
+    onSpinStateChange?.({ rotation: newTotal, spinning: true, resultIdx: targetIdx })
+    setTimeout(() => {
+      setSpinning(false)
+      const seg = SEGMENTS[targetIdx]
+      setLastResult(seg)
+      onResult(seg.outcome)
+      onSpinStateChange?.({ rotation: newTotal, spinning: false, resultIdx: targetIdx })
+    }, 4200)
+  }
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <SpinnerWheelDisplay rotation={rotation} spinning={spinning} lastResult={lastResult} />
       <button
         className="btn btn-primary text-base px-8 py-3"
         onClick={spin}
@@ -123,12 +130,6 @@ function SpinnerWheel({ onResult }) {
       >
         {spinning ? 'Spinning…' : lastResult ? 'Spin Again' : '🎰 Spin!'}
       </button>
-
-      {lastResult && !spinning && (
-        <div className="text-xl font-bold animate-bounce" style={{ color: lastResult.color }}>
-          {lastResult.emoji} {lastResult.label}
-        </div>
-      )}
     </div>
   )
 }
@@ -143,7 +144,7 @@ function highestRound(cells) {
   return { label: best || '—', pts: bestPts }
 }
 
-export function EndGameSummary({ scores, saveGame, user, onClose, onBananaRain, onPizzaRain, onNegativePizzaRain }) {
+export function EndGameSummary({ scores, saveGame, user, onClose, onBananaRain, onPizzaRain, onNegativePizzaRain, onSpinStateChange }) {
   const { cells, teamA, teamB, colorA, colorB, resetCells } = scores
   const { scoreA, scoreB } = totalScores(cells)
   const { label: bestRound, pts: bestPts } = highestRound(cells)
@@ -216,7 +217,7 @@ export function EndGameSummary({ scores, saveGame, user, onClose, onBananaRain, 
         {/* Spinner */}
         <div className="text-center">
           <p className="section-label mb-4">Prize Wheel</p>
-          <SpinnerWheel onResult={handleSpinResult} />
+          <SpinnerWheel onResult={handleSpinResult} onSpinStateChange={onSpinStateChange} />
         </div>
 
         {/* Action buttons */}

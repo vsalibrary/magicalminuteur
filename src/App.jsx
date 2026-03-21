@@ -194,7 +194,8 @@ export default function App() {
           scores={scores}
           saveGame={saveGame}
           user={user}
-          onClose={() => { setShowEndGame(false); timer.broadcastEndGame(false) }}
+          onSpinStateChange={timer.broadcastSpinState}
+          onClose={() => { setShowEndGame(false); timer.broadcastEndGame(false); timer.broadcastSpinState(null) }}
           onBananaRain={() => {}}
           onPizzaRain={() => {}}
           onNegativePizzaRain={() => {}}
