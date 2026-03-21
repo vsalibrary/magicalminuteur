@@ -67,25 +67,27 @@ export function Soundboard({ audio, sounds, settings, user, onPlay, onStop }) {
           )
         })}
       </div>
-      <div className="border-t border-subtle pt-2 mt-1">
-        <button
-          className={`btn w-full text-sm ${audio?.ambientOn ? 'btn-primary' : 'btn-ghost'}`}
-          onClick={() => {
-            if (audio?.ambientOn) {
-              audio.stopAmbient()
-            } else {
-              const ambientId = settings?.ambientSoundId
-              const ambientUrl = ambientId && ambientId !== 'default'
-                ? sounds?.find(s => s.id === ambientId)?.url
-                : null
-              audio?.startAmbient(ambientUrl)
-            }
-          }}
-          title={audio?.ambientOn ? 'Stop ambient sound' : 'Start ambient sound'}
-        >
-          🎵 Ambient
-        </button>
-      </div>
+      {user && (
+        <div className="border-t border-subtle pt-2 mt-1">
+          <button
+            className={`btn w-full text-sm ${audio?.ambientOn ? 'btn-primary' : 'btn-ghost'}`}
+            onClick={() => {
+              if (audio?.ambientOn) {
+                audio.stopAmbient()
+              } else {
+                const ambientId = settings?.ambientSoundId
+                const ambientUrl = ambientId && ambientId !== 'default'
+                  ? sounds?.find(s => s.id === ambientId)?.url
+                  : null
+                audio?.startAmbient(ambientUrl)
+              }
+            }}
+            title={audio?.ambientOn ? 'Stop ambient sound' : 'Start ambient sound'}
+          >
+            🎵 Ambient
+          </button>
+        </div>
+      )}
       {!user && (
         <p className="text-xs text-muted italic text-center pt-1">
           Log in to upload your own sounds

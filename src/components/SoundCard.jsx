@@ -27,7 +27,7 @@ export function SoundCard({
   return (
     <div className="card p-4 flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-medium text-white/90 truncate flex-1" title={sound.name}>
+        <span className="text-sm font-medium truncate flex-1" style={{ color: 'var(--color-text)' }} title={sound.name}>
           {sound.name}
         </span>
         <div className="flex items-center gap-2 shrink-0">
@@ -49,7 +49,8 @@ export function SoundCard({
           {canManage && (
             <button
               onClick={onDelete}
-              className="text-white/30 hover:text-danger transition-colors text-xs p-1"
+              className="hover:text-danger transition-colors text-xs p-1"
+              style={{ color: 'var(--color-muted)' }}
               title="Delete sound"
             >
               ✕
@@ -68,7 +69,7 @@ export function SoundCard({
             const active = assignedSlots?.has(slot.key)
             return (
               <React.Fragment key={slot.key}>
-                {i === 4 && <div className="w-px self-stretch bg-white/10 mx-0.5" />}
+                {i === 4 && <div className="w-px self-stretch mx-0.5" style={{ backgroundColor: 'var(--color-border)' }} />}
                 <button
                   onClick={() => onAssign(slot.key)}
                   className={`score-btn text-sm px-2 py-1 ${active ? 'score-btn-active' : ''}`}
