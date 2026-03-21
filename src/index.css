@@ -30,15 +30,15 @@
   }
 
   .arcade {
-    --color-bg:           #000011;
-    --color-surface:      #08002a;
-    --color-border:       #ff00ff;
-    --color-text:         #00ffff;
-    --color-muted:        rgba(0,255,255,0.70);
-    --color-hover:        rgba(255,0,255,0.08);
-    --color-hover-strong: rgba(255,0,255,0.16);
-    --color-ring-bg:      rgba(255,0,255,0.12);
-    --color-ripple:       rgba(0,255,255,0.25);
+    --color-bg:           #1a0a2e;
+    --color-surface:      #2d1060;
+    --color-border:       #9b5de5;
+    --color-text:         #ffffff;
+    --color-muted:        rgba(255,255,255,0.75);
+    --color-hover:        rgba(155,93,229,0.20);
+    --color-hover-strong: rgba(155,93,229,0.35);
+    --color-ring-bg:      rgba(255,255,255,0.10);
+    --color-ripple:       rgba(255,255,255,0.30);
   }
 
   html, body {
@@ -157,108 +157,154 @@
   }
 }
 
-/* ─── Arcade theme overrides ────────────────────────── */
+/* ─── Arcade theme — pixel-game style ───────────────── */
+/* Palette: sky-blue #57c8f2 · hot-pink #f055a0 · purple #9b5de5 · orange #ffa94d */
+
 .arcade body {
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Press Start 2P', monospace;
 }
 
 .arcade .section-label,
 .arcade h2,
 .arcade h3 {
   font-family: 'Press Start 2P', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
+  font-size: 0.55rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-.arcade .card,
-.arcade .btn,
-.arcade .btn-primary,
-.arcade .btn-ghost,
-.arcade .btn-success,
-.arcade .btn-danger,
-.arcade .btn-action,
-.arcade .score-btn,
-.arcade input[type="text"],
-.arcade input[type="range"] {
-  border-radius: 0 !important;
-}
-
-.arcade .card {
-  border: 1px solid var(--color-border);
-  box-shadow: 0 0 12px rgba(255,0,255,0.3), inset 0 0 30px rgba(0,0,64,0.4);
-}
-
-.arcade .btn-primary {
-  box-shadow: 0 0 8px rgba(255,0,255,0.5);
-}
-
-.arcade {
-  text-shadow: 0 0 8px rgba(0,255,255,0.4);
-}
-.arcade .btn,
-.arcade .score-btn,
-.arcade input {
+  color: #ffffff;
   text-shadow: none;
 }
 
-html.arcade::after {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent 0px,
-    transparent 3px,
-    rgba(0,0,0,0.18) 3px,
-    rgba(0,0,0,0.18) 4px
-  );
-  pointer-events: none;
-  z-index: 9999;
+/* Cards */
+.arcade .card {
+  border-radius: 16px !important;
+  border: 2px solid #9b5de5 !important;
+  background-color: #2d1060;
+  box-shadow: 0 5px 0 #4a1f80;
 }
 
-/* Arcade mobile nav glow */
-.arcade .mobile-nav {
-  box-shadow: 0 -4px 20px rgba(255, 0, 255, 0.2);
+/* ── All buttons: pill shape + Press Start 2P + 3D press ── */
+.arcade .btn {
+  border-radius: 9999px !important;
+  font-family: 'Press Start 2P', monospace !important;
+  font-size: 0.5rem !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-shadow: none !important;
+  border: none !important;
+  outline: 2px dashed rgba(255,255,255,0.5);
+  outline-offset: -5px;
+  transition: transform 0.06s, box-shadow 0.06s !important;
 }
-.arcade .nav-tab-active {
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+.arcade .btn:active:not(:disabled) {
+  transform: translateY(3px);
 }
 
-/* Arcade visibility fixes — replace low-contrast purple accent with cyan/magenta */
+/* Primary: sky blue */
 .arcade .btn-primary {
-  background-color: #ff00ff;
-  color: #000011;
-  box-shadow: 0 0 12px rgba(255, 0, 255, 0.6);
+  background-color: #57c8f2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 0 #2a8cb5 !important;
 }
-.arcade .btn-primary:hover {
-  background-color: #ff44ff;
-  color: #000011;
+.arcade .btn-primary:hover:not(:disabled) { background-color: #6fd3f5 !important; }
+.arcade .btn-primary:active:not(:disabled) { box-shadow: 0 1px 0 #2a8cb5 !important; }
+
+/* Ghost: purple */
+.arcade .btn-ghost {
+  background-color: #9b5de5 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 0 #5a2ba0 !important;
 }
-.arcade .score-btn-active {
-  background-color: rgba(0, 255, 255, 0.12);
-  border-color: rgba(0, 255, 255, 0.5);
-  color: #00ffff;
+.arcade .btn-ghost:hover:not(:disabled) {
+  background-color: #a96de8 !important;
+  color: #ffffff !important;
 }
+.arcade .btn-ghost:active:not(:disabled) { box-shadow: 0 1px 0 #5a2ba0 !important; }
+
+/* Success: orange */
 .arcade .btn-success {
-  color: #00ffff;
-  border-color: rgba(0, 255, 255, 0.4);
-  background-color: rgba(0, 255, 255, 0.1);
+  background-color: #ffa94d !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 0 #c07030 !important;
 }
+.arcade .btn-success:active:not(:disabled) { box-shadow: 0 1px 0 #c07030 !important; }
+
+/* Danger: hot pink */
 .arcade .btn-danger {
-  color: #ff4444;
-  border-color: rgba(255, 68, 68, 0.4);
-  background-color: rgba(255, 68, 68, 0.1);
+  background-color: #f055a0 !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 4px 0 #a02060 !important;
 }
-.arcade input[type="text"],
+.arcade .btn-danger:active:not(:disabled) { box-shadow: 0 1px 0 #a02060 !important; }
+
+/* Correct action button: sky blue pill */
+.arcade .btn-action.bg-success\/20 {
+  background-color: #57c8f2 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow: 0 5px 0 #2a8cb5 !important;
+  outline: 2px dashed rgba(255,255,255,0.5);
+  outline-offset: -7px;
+}
+.arcade .btn-action.bg-success\/20:active { box-shadow: 0 2px 0 #2a8cb5 !important; transform: translateY(3px); }
+
+/* Incorrect action button: hot pink pill */
+.arcade .btn-action.bg-danger\/20 {
+  background-color: #f055a0 !important;
+  color: #ffffff !important;
+  border: none !important;
+  border-radius: 20px !important;
+  box-shadow: 0 5px 0 #a02060 !important;
+  outline: 2px dashed rgba(255,255,255,0.5);
+  outline-offset: -7px;
+}
+.arcade .btn-action.bg-danger\/20:active { box-shadow: 0 2px 0 #a02060 !important; transform: translateY(3px); }
+
+/* Score table buttons */
+.arcade .score-btn {
+  border-radius: 8px !important;
+  border: none !important;
+  background-color: #3d1880 !important;
+  color: rgba(255,255,255,0.90) !important;
+  box-shadow: 0 2px 0 #1a0a40 !important;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.45rem !important;
+}
+.arcade .score-btn:hover { background-color: #5a2ba0 !important; color: #ffffff !important; }
+.arcade .score-btn-active { background-color: #57c8f2 !important; color: #ffffff !important; border: none !important; box-shadow: 0 2px 0 #2a8cb5 !important; }
+.arcade .score-btn-warn   { background-color: #ffa94d !important; color: #ffffff !important; border: none !important; box-shadow: 0 2px 0 #c07030 !important; }
+.arcade .score-btn-wrong  { background-color: #f055a0 !important; color: #ffffff !important; border: none !important; box-shadow: 0 2px 0 #a02060 !important; }
+
+/* Inputs */
+.arcade input[type="text"] {
+  border-radius: 9999px !important;
+  border: 2px solid #9b5de5 !important;
+  background-color: #1a0a2e !important;
+  color: #ffffff !important;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+.arcade input[type="text"]::placeholder { color: rgba(255,255,255,0.4) !important; }
 .arcade input[type="range"] {
-  color: #00ffff;
-  background-color: #08002a;
-  border-color: #ff00ff;
+  border-radius: 0 !important;
+  accent-color: #57c8f2;
 }
-.arcade input[type="text"]::placeholder {
-  color: rgba(0, 255, 255, 0.35);
+
+/* Mobile nav */
+.arcade .mobile-nav {
+  background-color: #1a0a2e;
+  border-top: 2px solid #9b5de5;
+  box-shadow: 0 -4px 20px rgba(155,93,229,0.4);
 }
+.arcade .nav-tab-active { color: #57c8f2; text-shadow: none; }
+
+/* No scanlines — they clash with the colourful style */
+html.arcade::after { display: none; }
 
 /* ─── Mobile overrides ──────────────────────────────── */
 @media (max-width: 639px) {
