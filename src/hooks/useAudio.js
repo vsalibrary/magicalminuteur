@@ -6,75 +6,52 @@ let sharedVolume = 0.8
 let currentCustomAudio = null
 
 // ── Ambient sound state (module-level, shared across hook instances) ──────────
-let ambientGain = null
-let ambientNodes = []
+let ambientAudio = null
 let ambientIsRunning = false
-const AMBIENT_TARGET = 0.10  // base gain when running
+let ambientFadeTimer = null
+const AMBIENT_TARGET = 0.10
 
 function duckAmbient(durationSecs = 2) {
-  if (!ambientGain || !ambientIsRunning || !sharedCtx) return
-  const t = sharedCtx.currentTime
-  ambientGain.gain.cancelScheduledValues(t)
-  ambientGain.gain.setTargetAtTime(0.015, t, 0.06)           // quick duck
-  ambientGain.gain.setTargetAtTime(AMBIENT_TARGET, t + durationSecs, 0.6) // slow recovery
+  if (!ambientAudio || !ambientIsRunning) return
+  ambientAudio.volume = 0.015
+  clearTimeout(ambientFadeTimer)
+  ambientFadeTimer = setTimeout(() => {
+    if (ambientAudio && ambientIsRunning) ambientAudio.volume = AMBIENT_TARGET
+  }, durationSecs * 1000)
 }
 
-function startAmbientNodes(ctx) {
+function startAmbientNodes() {
   if (ambientIsRunning) return
-  if (!ambientGain) {
-    ambientGain = ctx.createGain()
-    ambientGain.gain.value = 0
-    ambientGain.connect(ctx.destination)
+  if (!ambientAudio) {
+    ambientAudio = new Audio('/sounds/ambient.mp3')
+    ambientAudio.loop = true
   }
-  ambientNodes.forEach(n => { try { n.stop?.() } catch {} })
-  ambientNodes = []
-
-  // Warm pad: root A2 (110 Hz) + subtle detune + fifth + octave
-  const voices = [
-    { freq: 110.0, gain: 0.30 },
-    { freq: 110.5, gain: 0.18 },
-    { freq: 165.0, gain: 0.20 },
-    { freq: 220.0, gain: 0.12 },
-  ]
-  voices.forEach(v => {
-    const osc = ctx.createOscillator()
-    const g = ctx.createGain()
-    osc.type = 'sine'
-    osc.frequency.value = v.freq
-    g.gain.value = v.gain
-    osc.connect(g)
-    g.connect(ambientGain)
-    osc.start()
-    ambientNodes.push(osc)
-  })
-
-  // Slow tremolo LFO (±0.012 gain, 0.08 Hz)
-  const lfo = ctx.createOscillator()
-  const lfoDepth = ctx.createGain()
-  lfo.frequency.value = 0.08
-  lfoDepth.gain.value = 0.012
-  lfo.connect(lfoDepth)
-  lfoDepth.connect(ambientGain.gain)
-  lfo.start()
-  ambientNodes.push(lfo)
-
-  const t = ctx.currentTime
-  ambientGain.gain.cancelScheduledValues(t)
-  ambientGain.gain.setValueAtTime(0, t)
-  ambientGain.gain.linearRampToValueAtTime(AMBIENT_TARGET, t + 2) // 2s fade in
+  ambientAudio.volume = 0
+  ambientAudio.play().catch(() => {})
+  // Fade in over 2s (20 steps × 100ms)
+  let vol = 0
+  const step = AMBIENT_TARGET / 20
+  const fadeIn = setInterval(() => {
+    vol = Math.min(AMBIENT_TARGET, vol + step)
+    if (ambientAudio) ambientAudio.volume = vol
+    if (vol >= AMBIENT_TARGET) clearInterval(fadeIn)
+  }, 100)
   ambientIsRunning = true
 }
 
-function stopAmbientNodes(ctx) {
-  if (!ambientGain) { ambientIsRunning = false; return }
-  const t = ctx.currentTime
-  ambientGain.gain.cancelScheduledValues(t)
-  ambientGain.gain.setValueAtTime(ambientGain.gain.value, t)
-  ambientGain.gain.linearRampToValueAtTime(0, t + 0.8) // 0.8s fade out
-  const toStop = [...ambientNodes]
-  ambientNodes = []
+function stopAmbientNodes() {
+  if (!ambientAudio) { ambientIsRunning = false; return }
   ambientIsRunning = false
-  setTimeout(() => toStop.forEach(n => { try { n.stop?.() } catch {} }), 900)
+  let vol = ambientAudio.volume
+  const step = vol / 8
+  const fadeOut = setInterval(() => {
+    vol = Math.max(0, vol - step)
+    if (ambientAudio) ambientAudio.volume = vol
+    if (vol <= 0) {
+      clearInterval(fadeOut)
+      if (ambientAudio) { ambientAudio.pause(); ambientAudio.currentTime = 0 }
+    }
+  }, 100)
 }
 
 // Preload default sounds so they play instantly on first press
@@ -305,14 +282,12 @@ export function useAudio() {
   }, [])
 
   const startAmbient = useCallback(() => {
-    const { ctx } = getCtx()
-    startAmbientNodes(ctx)
+    startAmbientNodes()
     setAmbientOn(true)
   }, [])
 
   const stopAmbient = useCallback(() => {
-    const { ctx } = getCtx()
-    stopAmbientNodes(ctx)
+    stopAmbientNodes()
     setAmbientOn(false)
   }, [])
 

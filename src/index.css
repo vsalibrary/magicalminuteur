@@ -225,6 +225,41 @@ html.arcade::after {
   text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
 }
 
+/* Arcade visibility fixes — replace low-contrast purple accent with cyan/magenta */
+.arcade .btn-primary {
+  background-color: #ff00ff;
+  color: #000011;
+  box-shadow: 0 0 12px rgba(255, 0, 255, 0.6);
+}
+.arcade .btn-primary:hover {
+  background-color: #ff44ff;
+  color: #000011;
+}
+.arcade .score-btn-active {
+  background-color: rgba(0, 255, 255, 0.12);
+  border-color: rgba(0, 255, 255, 0.5);
+  color: #00ffff;
+}
+.arcade .btn-success {
+  color: #00ffff;
+  border-color: rgba(0, 255, 255, 0.4);
+  background-color: rgba(0, 255, 255, 0.1);
+}
+.arcade .btn-danger {
+  color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.4);
+  background-color: rgba(255, 68, 68, 0.1);
+}
+.arcade input[type="text"],
+.arcade input[type="range"] {
+  color: #00ffff;
+  background-color: #08002a;
+  border-color: #ff00ff;
+}
+.arcade input[type="text"]::placeholder {
+  color: rgba(0, 255, 255, 0.35);
+}
+
 /* ─── Mobile overrides ──────────────────────────────── */
 @media (max-width: 639px) {
   .score-btn {

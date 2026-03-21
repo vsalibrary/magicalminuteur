@@ -67,8 +67,17 @@ export function Soundboard({ audio, sounds, settings, user, onPlay, onStop }) {
           )
         })}
       </div>
+      <div className="border-t border-subtle pt-2 mt-1">
+        <button
+          className={`btn w-full text-sm ${audio?.ambientOn ? 'btn-primary' : 'btn-ghost'}`}
+          onClick={() => audio?.ambientOn ? audio.stopAmbient() : audio.startAmbient()}
+          title={audio?.ambientOn ? 'Stop ambient sound' : 'Start ambient sound'}
+        >
+          🎵 Ambient
+        </button>
+      </div>
       {!user && (
-        <p className="text-xs text-muted italic text-center pt-1 border-t border-subtle mt-1">
+        <p className="text-xs text-muted italic text-center pt-1">
           Log in to upload your own sounds
         </p>
       )}

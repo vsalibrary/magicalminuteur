@@ -145,13 +145,6 @@ export function Timer({ timer, audio, sounds, settings, onCorrect, onIncorrect }
           <RippleButton className="btn btn-ghost text-sm" onClick={pause}>Pause</RippleButton>
         )}
         <RippleButton className="btn btn-ghost text-sm" onClick={reset}>Reset</RippleButton>
-        <RippleButton
-          className={`btn text-sm ${audio?.ambientOn ? 'btn-primary' : 'btn-ghost'}`}
-          onClick={() => audio?.ambientOn ? audio.stopAmbient() : audio.startAmbient()}
-          title={audio?.ambientOn ? 'Stop ambient sound' : 'Start ambient sound'}
-        >
-          🎵
-        </RippleButton>
       </div>
 
       {/* Volume */}

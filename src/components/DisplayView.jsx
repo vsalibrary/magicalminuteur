@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSession'
-import { useTheme } from '../hooks/useTheme'
 import { ROUNDS, totalScores } from '../utils/scores'
+
+const DISPLAY_CYCLE = { light: 'dark', dark: 'arcade', arcade: 'light' }
 
 const BANANA_COUNT = 18
 
@@ -17,11 +18,21 @@ function getRingColor(progress) {
 }
 
 export function DisplayView() {
-  const { theme, toggleTheme } = useTheme()
+  const [theme, setTheme] = useState(() => localStorage.getItem('displayTheme') || 'light')
   const { user, signIn } = useAuth()
   const { timer, scores } = useSession(user?.uid || null)
   const [bananaVisible, setBananaVisible] = useState(false)
   const [mirrored, setMirrored] = useState(true)
+
+  useEffect(() => {
+    const root = document.documentElement
+    root.classList.remove('dark', 'arcade')
+    if (theme === 'dark') root.classList.add('dark')
+    if (theme === 'arcade') root.classList.add('arcade')
+    localStorage.setItem('displayTheme', theme)
+  }, [theme])
+
+  const toggleTheme = () => setTheme(t => DISPLAY_CYCLE[t] || 'light')
 
   useEffect(() => {
     if (!timer.remoteBananaEvent) return

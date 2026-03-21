@@ -26,10 +26,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('timer')
   const [fiveSecKey, setFiveSecKey] = useState(0)
   const [timesUpKey, setTimesUpKey] = useState(0)
-  const [confettiKey, setConfettiKey] = useState(0)
-  const [bananaKey, setBananaKey] = useState(0)
-  const [pizzaKey, setPizzaKey] = useState(0)
-  const [pizzaNegKey, setPizzaNegKey] = useState(0)
   const [showAdmin, setShowAdmin] = useState(false)
   const [showEndGame, setShowEndGame] = useState(false)
   const [showQR, setShowQR] = useState(false)
@@ -68,13 +64,7 @@ export default function App() {
     else audio.stopCustom()
   }, [timer.remoteSoundEvent?.key])
 
-  useEffect(() => {
-    if (!timer.remoteBananaEvent) return
-    setBananaKey(k => k + 1)
-  }, [timer.remoteBananaEvent?.key])
-
   const handleCorrect = () => {
-    setConfettiKey(k => k + 1)
     timer.reset()
   }
 
@@ -177,10 +167,6 @@ export default function App() {
       <Overlay
         fiveSecKey={fiveSecKey}
         timesUpKey={timesUpKey}
-        confettiKey={confettiKey}
-        bananaKey={bananaKey}
-        pizzaKey={pizzaKey}
-        pizzaNegKey={pizzaNegKey}
       />
 
       {showAdmin && (
@@ -209,9 +195,9 @@ export default function App() {
           saveGame={saveGame}
           user={user}
           onClose={() => setShowEndGame(false)}
-          onBananaRain={() => setBananaKey(k => k + 1)}
-          onPizzaRain={() => setPizzaKey(k => k + 1)}
-          onNegativePizzaRain={() => setPizzaNegKey(k => k + 1)}
+          onBananaRain={() => {}}
+          onPizzaRain={() => {}}
+          onNegativePizzaRain={() => {}}
         />
       )}
 
