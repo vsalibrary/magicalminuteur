@@ -64,6 +64,58 @@ export function DisplayView() {
 
   const themeIcon = theme === 'dark' ? '☀' : theme === 'light' ? '✦' : '☾'
 
+  const winner = scoreA > scoreB ? scores.teamA : scoreB > scoreA ? scores.teamB : null
+  const winnerColor = scoreA > scoreB ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24')
+
+  if (timer.endGameActive) {
+    return (
+      <div
+        className="fixed inset-0 flex flex-col items-center justify-center gap-8 select-none"
+        style={{ backgroundColor: 'var(--color-bg)' }}
+      >
+        {/* Controls */}
+        <div className="absolute top-3 right-4 flex gap-2" style={{ zIndex: 10 }}>
+          <button onClick={toggleTheme} className="btn btn-ghost text-xs px-2 py-1" title="Toggle theme">{themeIcon}</button>
+        </div>
+
+        <div
+          className="font-semibold tracking-widest uppercase"
+          style={{ color: 'var(--color-muted)', fontSize: 'clamp(0.75rem, 2vw, 1.25rem)' }}
+        >
+          Game Over
+        </div>
+
+        {winner ? (
+          <div
+            className="font-bold tracking-widest uppercase text-center"
+            style={{ color: winnerColor, fontSize: 'clamp(2.5rem, 8vw, 7rem)', lineHeight: 1.1 }}
+          >
+            {winner}<br />wins!
+          </div>
+        ) : (
+          <div
+            className="font-bold tracking-widest uppercase"
+            style={{ color: 'var(--color-text)', fontSize: 'clamp(2.5rem, 8vw, 7rem)', lineHeight: 1.1 }}
+          >
+            Draw!
+          </div>
+        )}
+
+        <div className="flex gap-16 items-end">
+          <div className="flex flex-col items-center gap-2">
+            <span style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(0.8rem, 2vw, 1.5rem)', fontWeight: 600 }}>{scores.teamA}</span>
+            <span style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(3rem, 10vw, 8rem)', fontWeight: 700, lineHeight: 1 }}>{scoreA}</span>
+          </div>
+          <span style={{ color: 'var(--color-muted)', fontSize: 'clamp(1.5rem, 4vw, 3rem)', paddingBottom: '0.4em' }}>vs</span>
+          <div className="flex flex-col items-center gap-2">
+            <span style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(0.8rem, 2vw, 1.5rem)', fontWeight: 600 }}>{scores.teamB}</span>
+            <span style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(3rem, 10vw, 8rem)', fontWeight: 700, lineHeight: 1 }}>{scoreB}</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-between select-none"
@@ -181,51 +233,6 @@ export function DisplayView() {
       >
         {roundLabel}
       </div>
-
-      {/* End-game overlay */}
-      {timer.endGameActive && (() => {
-        const winner = scoreA > scoreB ? scores.teamA : scoreB > scoreA ? scores.teamB : null
-        const winnerColor = scoreA > scoreB ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24')
-        return (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-6"
-            style={{ backgroundColor: 'rgba(0,0,0,0.75)', zIndex: 20 }}
-          >
-            <div
-              className="font-bold tracking-widest uppercase"
-              style={{ color: 'var(--color-muted)', fontSize: 'clamp(1rem, 2.5vw, 1.5rem)' }}
-            >
-              Game Over
-            </div>
-            {winner ? (
-              <div
-                className="font-bold tracking-widest uppercase"
-                style={{ color: winnerColor, fontSize: 'clamp(2rem, 6vw, 5rem)' }}
-              >
-                {winner} wins!
-              </div>
-            ) : (
-              <div
-                className="font-bold tracking-widest uppercase"
-                style={{ color: 'var(--color-text)', fontSize: 'clamp(2rem, 6vw, 5rem)' }}
-              >
-                Draw!
-              </div>
-            )}
-            <div className="flex gap-12 items-end">
-              <div className="flex flex-col items-center gap-2">
-                <span style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(0.8rem, 2vw, 1.5rem)', fontWeight: 600 }}>{scores.teamA}</span>
-                <span style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(3rem, 8vw, 6rem)', fontWeight: 700, lineHeight: 1 }}>{scoreA}</span>
-              </div>
-              <span style={{ color: 'var(--color-muted)', fontSize: 'clamp(1.5rem, 4vw, 3rem)', paddingBottom: '0.5em' }}>vs</span>
-              <div className="flex flex-col items-center gap-2">
-                <span style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(0.8rem, 2vw, 1.5rem)', fontWeight: 600 }}>{scores.teamB}</span>
-                <span style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(3rem, 8vw, 6rem)', fontWeight: 700, lineHeight: 1 }}>{scoreB}</span>
-              </div>
-            </div>
-          </div>
-        )
-      })()}
 
       {/* Banana rain */}
       {bananaVisible && (
