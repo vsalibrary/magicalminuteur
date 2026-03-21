@@ -1,7 +1,10 @@
+import { useEffect, useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSession'
 import { useTheme } from '../hooks/useTheme'
 import { ROUNDS, totalScores } from '../utils/scores'
+
+const BANANA_COUNT = 18
 
 const R = 130
 const CIRC = 2 * Math.PI * R
@@ -14,18 +17,18 @@ function getRingColor(progress) {
 }
 
 export function DisplayView() {
-  useTheme()
+  const { theme, toggleTheme } = useTheme()
   const { user, signIn } = useAuth()
   const { timer, scores } = useSession(user?.uid || null)
+  const [bananaVisible, setBananaVisible] = useState(false)
+  const [mirrored, setMirrored] = useState(true)
 
-  if (!user) {
-    return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center gap-6" style={{ backgroundColor: '#0a0a0f' }}>
-        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '1.25rem' }}>Sign in to mirror your live session</p>
-        <button onClick={signIn} className="btn btn-primary text-lg px-8 py-3">Sign in with Google</button>
-      </div>
-    )
-  }
+  useEffect(() => {
+    if (!timer.remoteBananaEvent) return
+    setBananaVisible(true)
+    const t = setTimeout(() => setBananaVisible(false), 2500)
+    return () => clearTimeout(t)
+  }, [timer.remoteBananaEvent?.key])
 
   const { scoreA, scoreB } = totalScores(scores.cells)
 
@@ -41,42 +44,68 @@ export function DisplayView() {
   const offset = CIRC * (1 - (progress || 0) / 100)
   const statusLabel = isPaused ? 'paused' : isRunning ? 'seconds' : 'ready'
 
+  const leftName  = mirrored ? scores.teamB : scores.teamA
+  const leftScore = mirrored ? scoreB : scoreA
+  const leftColor = mirrored ? (scores.colorB || '#fbbf24') : (scores.colorA || '#5b4fe8')
+  const rightName  = mirrored ? scores.teamA : scores.teamB
+  const rightScore = mirrored ? scoreA : scoreB
+  const rightColor = mirrored ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24')
+
+  const themeIcon = theme === 'dark' ? '☀' : theme === 'light' ? '✦' : '☾'
+
   return (
     <div
       className="fixed inset-0 flex flex-col items-center justify-between select-none"
-      style={{ backgroundColor: '#0a0a0f', padding: '6vh 6vw' }}
+      style={{ backgroundColor: 'var(--color-bg)', padding: '6vh 6vw' }}
     >
+      {/* Controls (top-right corner) */}
+      <div className="absolute top-3 right-4 flex gap-2" style={{ zIndex: 10 }}>
+        {!user && (
+          <button onClick={signIn} className="btn btn-ghost text-xs px-2 py-1" style={{ opacity: 0.5 }}>Sign in</button>
+        )}
+        <button
+          onClick={() => setMirrored(m => !m)}
+          className="btn btn-ghost text-xs px-2 py-1"
+          title="Toggle mirror"
+        >
+          {mirrored ? '⇆ Mirrored' : '⇆ Normal'}
+        </button>
+        <button onClick={toggleTheme} className="btn btn-ghost text-xs px-2 py-1" title="Toggle theme">
+          {themeIcon}
+        </button>
+      </div>
+
       {/* Team scores */}
       <div className="w-full flex items-start justify-between gap-8">
         <div className="flex flex-col items-center gap-3 flex-1">
           <span
             className="font-semibold tracking-widest uppercase"
-            style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
+            style={{ color: leftColor, fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
           >
-            {scores.teamA}
+            {leftName}
           </span>
           <span
             className="font-bold tabular-nums"
-            style={{ color: scores.colorA || '#5b4fe8', fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
+            style={{ color: leftColor, fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
           >
-            {scoreA}
+            {leftScore}
           </span>
         </div>
 
-        <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: 'clamp(2rem, 5vw, 4rem)', paddingTop: '0.5em' }}>vs</span>
+        <span style={{ color: 'var(--color-muted)', fontSize: 'clamp(2rem, 5vw, 4rem)', paddingTop: '0.5em' }}>vs</span>
 
         <div className="flex flex-col items-center gap-3 flex-1">
           <span
             className="font-semibold tracking-widest uppercase"
-            style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
+            style={{ color: rightColor, fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
           >
-            {scores.teamB}
+            {rightName}
           </span>
           <span
             className="font-bold tabular-nums"
-            style={{ color: scores.colorB || '#fbbf24', fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
+            style={{ color: rightColor, fontSize: 'clamp(4rem, 12vw, 9rem)', lineHeight: 1 }}
           >
-            {scoreB}
+            {rightScore}
           </span>
         </div>
       </div>
@@ -90,7 +119,7 @@ export function DisplayView() {
           <circle
             cx="160" cy="160" r={R}
             fill="none"
-            stroke="rgba(255,255,255,0.07)"
+            stroke="var(--color-border)"
             strokeWidth="12"
           />
           <circle
@@ -126,7 +155,7 @@ export function DisplayView() {
               fontSize: '16px',
               letterSpacing: '0.15em',
               textTransform: 'uppercase',
-              fill: 'rgba(255,255,255,0.25)',
+              fill: 'var(--color-muted)',
             }}
           >
             {statusLabel}
@@ -137,10 +166,33 @@ export function DisplayView() {
       {/* Round label */}
       <div
         className="font-semibold tracking-widest uppercase"
-        style={{ color: 'rgba(255,255,255,0.3)', fontSize: 'clamp(1rem, 2.5vw, 1.75rem)' }}
+        style={{ color: 'var(--color-muted)', fontSize: 'clamp(1rem, 2.5vw, 1.75rem)' }}
       >
         {roundLabel}
       </div>
+
+      {/* Banana rain */}
+      {bananaVisible && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {Array.from({ length: BANANA_COUNT }, (_, i) => (
+            <div
+              key={i}
+              className="absolute top-0 select-none"
+              style={{
+                left: `${(i / BANANA_COUNT) * 100 + (i % 3) * 1.5}%`,
+                fontSize: `${2 + (i % 4) * 0.5}rem`,
+                animationName: 'confetti-fall',
+                animationDuration: `${0.7 + (i % 6) * 0.18}s`,
+                animationDelay: `${(i * 0.09) % 0.6}s`,
+                animationTimingFunction: 'linear',
+                animationFillMode: 'forwards',
+              }}
+            >
+              🍌
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

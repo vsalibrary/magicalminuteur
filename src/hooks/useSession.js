@@ -26,6 +26,7 @@ export function useSession(uid) {
   const [justFiveSec, setJustFiveSec] = useState(false)
   const [justFinished, setJustFinished] = useState(false)
   const [remoteSoundEvent, setRemoteSoundEvent] = useState(null)
+  const [remoteBananaEvent, setRemoteBananaEvent] = useState(null)
 
   // ── Score state ───────────────────────────────────────────────
   const [cells, setCells] = useState(initCells)
@@ -43,6 +44,8 @@ export function useSession(uid) {
   const lastStartedAtRef = useRef(null)   // track current timer's startedAt value
   const lastSoundIdRef = useRef(null)
   const soundSeededRef = useRef(false)   // true after first snapshot — prevents stale pendingSound replay on mount
+  const lastBananaIdRef = useRef(null)
+  const bananaSeededRef = useRef(false)
 
   // Clock calibration:
   //   clockOffsetRef = (serverTime) - (Date.now())
@@ -113,6 +116,16 @@ export function useSession(uid) {
         }
       }
       soundSeededRef.current = true
+
+      // ── Banana sync ───────────────────────────────────────────
+      const pb = data.pendingBanana
+      if (pb?.id && pb.id !== lastBananaIdRef.current) {
+        lastBananaIdRef.current = pb.id
+        if (bananaSeededRef.current) {
+          setRemoteBananaEvent({ key: Date.now() })
+        }
+      }
+      bananaSeededRef.current = true
 
       setIsPaused(!!data.isPaused)
 
@@ -332,9 +345,15 @@ export function useSession(uid) {
     setDoc(sessionRef, { pendingSound: { id, url: url || null } }, { merge: true })
   }, [uid])
 
+  const broadcastBanana = useCallback(() => {
+    if (!sessionRef) return
+    setDoc(sessionRef, { pendingBanana: { id: randomId() } }, { merge: true })
+  }, [uid])
+
   const timer = {
     seconds, isRunning, isPaused, progress, justFiveSec, justFinished,
     start, pause, resume, reset, broadcastSound, remoteSoundEvent,
+    broadcastBanana, remoteBananaEvent,
   }
   const scores = {
     cells, teamA, teamB, colorA, colorB, page,

@@ -6,11 +6,11 @@ const SEGMENTS = [
   { emoji: '🍌', label: 'Banana!',      outcome: 'banana',   color: '#fbbf24' },
   { emoji: '🍕', label: 'Pizza!',       outcome: 'pizza',    color: '#f97316' },
   { emoji: '🍌', label: 'Banana!',      outcome: 'banana',   color: '#fde68a' },
-  { emoji: '🍕', label: 'Owe Pizza!',   outcome: 'negative', color: '#ef4444' },
-  { emoji: '🍌', label: 'Banana!',      outcome: 'banana',   color: '#fbbf24' },
-  { emoji: '🍕', label: 'Pizza!',       outcome: 'pizza',    color: '#f97316' },
-  { emoji: '🍌', label: 'Banana!',      outcome: 'banana',   color: '#fde68a' },
-  { emoji: '🍕', label: 'Owe Pizza!',   outcome: 'negative', color: '#ef4444' },
+  { emoji: '🍕', label: 'Negative Pizza', outcome: 'negative', color: '#ef4444' },
+  { emoji: '🍌', label: 'Banana!',       outcome: 'banana',   color: '#fbbf24' },
+  { emoji: '🍕', label: 'Pizza!',        outcome: 'pizza',    color: '#f97316' },
+  { emoji: '🍌', label: 'Banana!',       outcome: 'banana',   color: '#fde68a' },
+  { emoji: '🍕', label: 'Negative Pizza', outcome: 'negative', color: '#ef4444' },
 ]
 
 const N = SEGMENTS.length
