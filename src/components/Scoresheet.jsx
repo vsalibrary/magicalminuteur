@@ -6,6 +6,7 @@ import { ROUNDS, totalScores } from '../utils/scores'
 const ANIMALS = ['Eagles', 'Tigers', 'Pandas', 'Lions', 'Foxes', 'Wolves', 'Hawks', 'Bears', 'Owls', 'Sharks']
 const FRUITS = ['Mangoes', 'Kiwis', 'Lychees', 'Papayas', 'Loquats', 'Jackfruits', 'Rambutans', 'Durians', 'Longans', 'Starfruits']
 const SWATCHES = ['#5b4fe8','#22d3ee','#60a5fa','#4ade80','#fbbf24','#fb923c','#f87171','#f472b6']
+const MASCOTS = ['⭐','🔥','🦁','🐉','🦊','🦅','🐯','🦈','🦄','⚡','💎','🌟','🎯','🌊','🏆','🚀','🐺','🌋']
 
 function ScoreFlash({ value, x, y, color }) {
   return (
@@ -66,7 +67,7 @@ const PAGE_SIZE = 4
 const TOTAL_PAGES = Math.ceil(ROUNDS.length / PAGE_SIZE)
 
 export function Scoresheet({ user, saveGame, scores, onThreePoints, onFinishGame }) {
-  const { cells, teamA, teamB, colorA, colorB, page, updateCell, setTeamA, setTeamB, setColorA, setColorB, setPage, resetCells } = scores
+  const { cells, teamA, teamB, colorA, colorB, mascotA, mascotB, page, updateCell, setTeamA, setTeamB, setColorA, setColorB, setMascotA, setMascotB, setPage, resetCells } = scores
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [saveToast, setSaveToast] = useState(false)
   const [flashes, setFlashes] = useState([])
@@ -166,7 +167,7 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints, onFinishGame
           {isPrimaryA ? (
             <PrimaryCell
               value={primary}
-              onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.() }}
+              onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.('a') }}
               onScore={(v, e) => addFlash(v, e, colorA)}
             />
           ) : (
@@ -188,7 +189,7 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints, onFinishGame
           {!isPrimaryA ? (
             <PrimaryCell
               value={primary}
-              onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.() }}
+              onChange={v => { updateCell(round.id, 'primary', v); if (v === 3) onThreePoints?.('b') }}
               onScore={(v, e) => addFlash(v, e, colorB)}
             />
           ) : (
@@ -227,6 +228,11 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints, onFinishGame
               <button type="button" key={c} onClick={() => setColorA(c)} style={{ width:16, height:16, borderRadius:'50%', backgroundColor:c, outline: colorA===c ? `2px solid ${c}` : 'none', outlineOffset:2, border:'none', cursor:'pointer', flexShrink:0 }} />
             ))}
           </div>
+          <div className="flex gap-0.5 flex-wrap mt-1">
+            {MASCOTS.map(m => (
+              <button type="button" key={m} onClick={() => setMascotA(m)} className="text-sm leading-none rounded transition-all" style={{ padding:'1px 2px', opacity: mascotA===m ? 1 : 0.45, outline: mascotA===m ? `2px solid ${colorA}` : 'none', outlineOffset:1, background:'none', border:'none', cursor:'pointer' }}>{m}</button>
+            ))}
+          </div>
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs text-muted uppercase tracking-wide">Team B</label>
@@ -242,6 +248,11 @@ export function Scoresheet({ user, saveGame, scores, onThreePoints, onFinishGame
           <div className="flex gap-1.5 mt-1">
             {SWATCHES.map(c => (
               <button type="button" key={c} onClick={() => setColorB(c)} style={{ width:16, height:16, borderRadius:'50%', backgroundColor:c, outline: colorB===c ? `2px solid ${c}` : 'none', outlineOffset:2, border:'none', cursor:'pointer', flexShrink:0 }} />
+            ))}
+          </div>
+          <div className="flex gap-0.5 flex-wrap mt-1">
+            {MASCOTS.map(m => (
+              <button type="button" key={m} onClick={() => setMascotB(m)} className="text-sm leading-none rounded transition-all" style={{ padding:'1px 2px', opacity: mascotB===m ? 1 : 0.45, outline: mascotB===m ? `2px solid ${colorB}` : 'none', outlineOffset:1, background:'none', border:'none', cursor:'pointer' }}>{m}</button>
             ))}
           </div>
         </div>

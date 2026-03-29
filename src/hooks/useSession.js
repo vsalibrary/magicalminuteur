@@ -36,6 +36,8 @@ export function useSession(uid) {
   const [teamB, setTeamBState] = useState('Team B')
   const [colorA, setColorAState] = useState('#5b4fe8')
   const [colorB, setColorBState] = useState('#fbbf24')
+  const [mascotA, setMascotAState] = useState('⭐')
+  const [mascotB, setMascotBState] = useState('🔥')
   const [page, setPageState] = useState(0)
 
   // ── Internal refs ─────────────────────────────────────────────
@@ -104,6 +106,8 @@ export function useSession(uid) {
       if (data.teamB !== undefined) setTeamBState(data.teamB)
       if (data.colorA !== undefined) setColorAState(data.colorA)
       if (data.colorB !== undefined) setColorBState(data.colorB)
+      if (data.mascotA !== undefined) setMascotAState(data.mascotA)
+      if (data.mascotB !== undefined) setMascotBState(data.mascotB)
       if (data.page !== undefined) setPageState(data.page)
 
       // ── Sound sync ────────────────────────────────────────────
@@ -124,7 +128,7 @@ export function useSession(uid) {
       if (pb?.id && pb.id !== lastBananaIdRef.current) {
         lastBananaIdRef.current = pb.id
         if (bananaSeededRef.current) {
-          setRemoteBananaEvent({ key: Date.now() })
+          setRemoteBananaEvent({ key: Date.now(), team: pb.team || 'a' })
         }
       }
       bananaSeededRef.current = true
@@ -321,6 +325,16 @@ export function useSession(uid) {
     if (sessionRef) setDoc(sessionRef, { colorB: color }, { merge: true })
   }, [uid])
 
+  const setMascotA = useCallback((emoji) => {
+    setMascotAState(emoji)
+    if (sessionRef) setDoc(sessionRef, { mascotA: emoji }, { merge: true })
+  }, [uid])
+
+  const setMascotB = useCallback((emoji) => {
+    setMascotBState(emoji)
+    if (sessionRef) setDoc(sessionRef, { mascotB: emoji }, { merge: true })
+  }, [uid])
+
   const setPage = useCallback((pageOrFn) => {
     setPageState(prev => {
       const next = typeof pageOrFn === 'function' ? pageOrFn(prev) : pageOrFn
@@ -350,9 +364,9 @@ export function useSession(uid) {
     setDoc(sessionRef, { pendingSound: { id, url: url || null } }, { merge: true })
   }, [uid])
 
-  const broadcastBanana = useCallback(() => {
+  const broadcastBanana = useCallback((team) => {
     if (!sessionRef) return
-    setDoc(sessionRef, { pendingBanana: { id: randomId() } }, { merge: true })
+    setDoc(sessionRef, { pendingBanana: { id: randomId(), team: team || 'a' } }, { merge: true })
   }, [uid])
 
   const broadcastEndGame = useCallback((active) => {
@@ -373,8 +387,8 @@ export function useSession(uid) {
     broadcastSpinState, spinState,
   }
   const scores = {
-    cells, teamA, teamB, colorA, colorB, page,
-    updateCell, setTeamA, setTeamB, setColorA, setColorB, setPage, resetCells, restoreCells,
+    cells, teamA, teamB, colorA, colorB, mascotA, mascotB, page,
+    updateCell, setTeamA, setTeamB, setColorA, setColorB, setMascotA, setMascotB, setPage, resetCells, restoreCells,
   }
 
   return { timer, scores }

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
 
-const APP_URL = 'https://battleofthebooks.netlify.app'
+const APP_URL = window.location.origin
 
 export function QRModal({ onClose }) {
   const [dataUrl, setDataUrl] = useState(null)

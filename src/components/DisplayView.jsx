@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useSession } from '../hooks/useSession'
 import { ROUNDS, totalScores } from '../utils/scores'
@@ -23,6 +23,9 @@ export function DisplayView() {
   const { user, signIn } = useAuth()
   const { timer, scores } = useSession(user?.uid || null)
   const [bananaVisible, setBananaVisible] = useState(false)
+  const [bananaTeam, setBananaTeam] = useState('a')
+  const [comeback, setComeback] = useState(null) // { teamName, color, mascot }
+  const prevDiffRef = useRef(null)
   const [mirrored, setMirrored] = useState(true)
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export function DisplayView() {
 
   useEffect(() => {
     if (!timer.remoteBananaEvent) return
+    setBananaTeam(timer.remoteBananaEvent.team || 'a')
     setBananaVisible(true)
     const t = setTimeout(() => setBananaVisible(false), 2500)
     return () => clearTimeout(t)
@@ -44,24 +48,49 @@ export function DisplayView() {
 
   const { scoreA, scoreB } = totalScores(scores.cells)
 
+  // Comeback detection: fires when score gap closes from >2 to ≤2
+  useEffect(() => {
+    const diff = scoreA - scoreB
+    const prev = prevDiffRef.current
+    if (prev !== null && Math.abs(prev) > 2 && Math.abs(diff) <= 2 && Math.abs(diff) > 0) {
+      const isAClosing = prev < 0  // A was behind
+      const teamName = isAClosing ? scores.teamA : scores.teamB
+      const color = isAClosing ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24')
+      const mascot = isAClosing ? (scores.mascotA || '⭐') : (scores.mascotB || '🔥')
+      setComeback({ teamName, color, mascot })
+      const t = setTimeout(() => setComeback(null), 3000)
+      return () => clearTimeout(t)
+    }
+    prevDiffRef.current = diff
+  }, [scoreA, scoreB])
+
   const activeRoundIdx = ROUNDS.findIndex(r => {
     const { primary, passover } = scores.cells[r.id]
     return primary === null || (primary === 'wrong' && passover === null)
   })
   const activeRound = activeRoundIdx >= 0 ? ROUNDS[activeRoundIdx] : null
   const roundLabel = activeRound ? activeRound.label : 'Game Complete'
+  const primaryTeamName = activeRound
+    ? (activeRound.primary === 'a' ? scores.teamA : scores.teamB)
+    : null
+  const primaryTeamColor = activeRound
+    ? (activeRound.primary === 'a' ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24'))
+    : null
 
   const { seconds, progress, isRunning, isPaused } = timer
   const ringColor = getRingColor(progress, theme === 'arcade')
   const offset = CIRC * (1 - (progress || 0) / 100)
   const statusLabel = isPaused ? 'paused' : isRunning ? 'seconds' : 'ready'
 
-  const leftName  = mirrored ? scores.teamB : scores.teamA
-  const leftScore = mirrored ? scoreB : scoreA
-  const leftColor = mirrored ? (scores.colorB || '#fbbf24') : (scores.colorA || '#5b4fe8')
-  const rightName  = mirrored ? scores.teamA : scores.teamB
-  const rightScore = mirrored ? scoreA : scoreB
-  const rightColor = mirrored ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24')
+  const leftName   = mirrored ? scores.teamB : scores.teamA
+  const leftScore  = mirrored ? scoreB : scoreA
+  const leftColor  = mirrored ? (scores.colorB || '#fbbf24') : (scores.colorA || '#5b4fe8')
+  const leftMascot = mirrored ? (scores.mascotB || '🔥') : (scores.mascotA || '⭐')
+  const rightName   = mirrored ? scores.teamA : scores.teamB
+  const rightScore  = mirrored ? scoreA : scoreB
+  const rightColor  = mirrored ? (scores.colorA || '#5b4fe8') : (scores.colorB || '#fbbf24')
+  const rightMascot = mirrored ? (scores.mascotA || '⭐') : (scores.mascotB || '🔥')
+  const rainEmoji = bananaTeam === 'a' ? (scores.mascotA || '⭐') : (scores.mascotB || '🔥')
 
   const themeIcon = theme === 'dark' ? '☀' : theme === 'light' ? '✦' : '☾'
 
@@ -86,7 +115,9 @@ export function DisplayView() {
         <div className="text-center">
           {winner ? (
             <>
-              <div style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}>🥇</div>
+              <div style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)' }}>
+                {scoreA > scoreB ? (scores.mascotA || '⭐') : (scores.mascotB || '🔥')}
+              </div>
               <div className="font-bold tracking-widest uppercase" style={{ color: winnerColor, fontSize: 'clamp(2rem, 5vw, 4rem)', lineHeight: 1.1 }}>
                 {winner} wins!
               </div>
@@ -150,10 +181,11 @@ export function DisplayView() {
 
       {/* Team scores */}
       <div className="w-full flex items-start justify-between gap-8">
-        <div className="flex flex-col items-center gap-3 flex-1">
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <span style={{ fontSize: 'clamp(1.5rem, 4vw, 3.5rem)', lineHeight: 1 }}>{leftMascot}</span>
           <span
             className="font-semibold tracking-widest uppercase"
-            style={{ color: leftColor, fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
+            style={{ color: leftColor, fontSize: 'clamp(0.85rem, 2vw, 1.75rem)' }}
           >
             {leftName}
           </span>
@@ -167,10 +199,11 @@ export function DisplayView() {
 
         <span style={{ color: 'var(--color-muted)', fontSize: 'clamp(2rem, 5vw, 4rem)', paddingTop: '0.5em' }}>vs</span>
 
-        <div className="flex flex-col items-center gap-3 flex-1">
+        <div className="flex flex-col items-center gap-1 flex-1">
+          <span style={{ fontSize: 'clamp(1.5rem, 4vw, 3.5rem)', lineHeight: 1 }}>{rightMascot}</span>
           <span
             className="font-semibold tracking-widest uppercase"
-            style={{ color: rightColor, fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}
+            style={{ color: rightColor, fontSize: 'clamp(0.85rem, 2vw, 1.75rem)' }}
           >
             {rightName}
           </span>
@@ -182,6 +215,21 @@ export function DisplayView() {
           </span>
         </div>
       </div>
+
+      {/* Comeback alert */}
+      {comeback && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 20 }}>
+          <div className="text-center" style={{ animation: 'score-fly-up 0.4s ease-out' }}>
+            <div style={{ fontSize: 'clamp(3rem, 8vw, 6rem)', lineHeight: 1 }}>{comeback.mascot}</div>
+            <div className="font-bold tracking-widest uppercase" style={{ color: comeback.color, fontSize: 'clamp(2rem, 5vw, 4rem)', textShadow: `0 0 30px ${comeback.color}88` }}>
+              COMEBACK!
+            </div>
+            <div className="font-semibold tracking-widest uppercase" style={{ color: comeback.color, fontSize: 'clamp(1rem, 2.5vw, 2rem)' }}>
+              {comeback.teamName}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Timer ring */}
       <div className={`flex flex-col items-center${isRunning && seconds <= 5 ? ' timer-pulsing' : ''}`}>
@@ -236,15 +284,25 @@ export function DisplayView() {
         </svg>
       </div>
 
-      {/* Round label */}
-      <div
-        className="font-semibold tracking-widest uppercase"
-        style={{ color: 'var(--color-muted)', fontSize: 'clamp(1rem, 2.5vw, 1.75rem)' }}
-      >
-        {roundLabel}
+      {/* Round label + primary team */}
+      <div className="flex flex-col items-center gap-1">
+        <div
+          className="font-semibold tracking-widest uppercase"
+          style={{ color: 'var(--color-text)', fontSize: 'clamp(1rem, 2.5vw, 1.75rem)' }}
+        >
+          {roundLabel}
+        </div>
+        {primaryTeamName && (
+          <div
+            className="tracking-wider uppercase"
+            style={{ color: primaryTeamColor, fontSize: 'clamp(0.7rem, 1.5vw, 1rem)' }}
+          >
+            {primaryTeamName} primary
+          </div>
+        )}
       </div>
 
-      {/* Banana rain */}
+      {/* Mascot rain on 3-pointer */}
       {bananaVisible && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {Array.from({ length: BANANA_COUNT }, (_, i) => (
@@ -261,7 +319,7 @@ export function DisplayView() {
                 animationFillMode: 'forwards',
               }}
             >
-              🍌
+              {rainEmoji}
             </div>
           ))}
         </div>

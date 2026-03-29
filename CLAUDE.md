@@ -171,7 +171,7 @@ Score buttons auto-shrink on mobile (`max-width: 639px`) via CSS media query.
 - ~~**QR code for cross-device join**~~ ✓ Done — `src/components/QRModal.jsx` using `qrcode` npm package; ▦ button in Header (desktop only).
 - ~~**Score point animations**~~ ✓ Done — `ScoreFlash` component in Scoresheet.jsx; fixed-position +2/+3 numbers fly up from clicked cell in team colour.
 - ~~**Per-team colour/identity**~~ ✓ Done
-- **Ambient background sound**: optional looping background music that auto-ducks when a sound effect fires; separate soundboard category.
+- ~~**Ambient background sound**~~ ✓ Done — 4-oscillator drone + LFO tremolo; auto-ducks on any sound event; 🎵 toggle in Timer.jsx.
 - ~~**End-of-game summary + Finish Game button**~~ ✓ Done — `src/components/EndGameSummary.jsx`; 🏆 Finish Game button in Scoresheet; SVG spinner prize wheel (banana/pizza/negative pizza outcomes trigger emoji rain).
 - ~~**Microphone recording**~~ ✓ Done — 🎤 Record button in SoundLibrary.jsx; MediaRecorder state machine (requesting→recording→preview→upload).
 - ~~**Cascading banana emojis**~~ ✓ Done

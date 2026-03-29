@@ -271,7 +271,7 @@
   color: rgba(255,255,255,0.90) !important;
   box-shadow: 0 2px 0 #1a0a40 !important;
   font-family: 'Press Start 2P', monospace;
-  font-size: 0.45rem !important;
+  font-size: 0.5rem !important;
 }
 .arcade .score-btn:hover { background-color: #5a2ba0 !important; color: #ffffff !important; }
 .arcade .score-btn-active { background-color: #57c8f2 !important; color: #ffffff !important; border: none !important; box-shadow: 0 2px 0 #2a8cb5 !important; }

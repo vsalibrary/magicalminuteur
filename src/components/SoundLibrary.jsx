@@ -1,12 +1,6 @@
 import { useRef, useState, useEffect, useMemo } from 'react'
 import { SoundCard } from './SoundCard'
 import { ConfirmDialog } from './ui/ConfirmDialog'
-import { useVisualizer } from '../hooks/useVisualizer'
-
-function PlayingSoundVisualizer({ analyser }) {
-  const bars = useVisualizer(analyser)
-  return bars
-}
 
 export function SoundLibrary({ user, sounds, settings, uploading, uploadProgress, uploadError, uploadSound, deleteSound, assignSound, audio }) {
   const fileInputRef = useRef(null)
